@@ -56,7 +56,10 @@ class MathEquation {
 
     update(scrollProgress) {
         if (scrollProgress < 0.5) {
-            // Before black hole: gentle floating
+            // Before black hole: friction slows symbols down
+            this.vx *= 0.995;
+            this.vy *= 0.995;
+
             this.x += this.vx;
             this.y += this.vy;
 
@@ -151,13 +154,13 @@ class BlackHole {
             this.x += this.vx;
             this.y += this.vy;
 
-            if (this.x - this.accretionDiskRadius < 0 || this.x + this.accretionDiskRadius > canvas.width) {
+            if (this.x - this.eventHorizon < 0 || this.x + this.eventHorizon > canvas.width) {
                 this.vx *= -1;
-                this.x = Math.max(this.accretionDiskRadius, Math.min(canvas.width - this.accretionDiskRadius, this.x));
+                this.x = Math.max(this.eventHorizon, Math.min(canvas.width - this.eventHorizon, this.x));
             }
-            if (this.y - this.accretionDiskRadius < 0 || this.y + this.accretionDiskRadius > canvas.height) {
+            if (this.y - this.eventHorizon < 0 || this.y + this.eventHorizon > canvas.height) {
                 this.vy *= -1;
-                this.y = Math.max(this.accretionDiskRadius, Math.min(canvas.height - this.accretionDiskRadius, this.y));
+                this.y = Math.max(this.eventHorizon, Math.min(canvas.height - this.eventHorizon, this.y));
             }
         }
     }
@@ -419,6 +422,8 @@ const stars = Array.from({ length: 150 }, () => new Star());
 
 // ==================== ANIMATION LOOP ====================
 function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
     const scrollProgress = Math.min(1, window.scrollY / (document.body.scrollHeight - window.innerHeight));
 
     // Smooth transition between utopia and space
