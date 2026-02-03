@@ -70,33 +70,42 @@ class MathEquation {
             const distance = Math.sqrt(dx * dx + dy * dy);
 
             // Only pull if within range
-            const attractionRange = 300;
+            const attractionRange = 350;
             if (distance < attractionRange) {
                 const angle = Math.atan2(dy, dx);
-                const pullStrength = Math.min(8, (attractionRange - distance) / 30);
+                const pullStrength = Math.min(12, (attractionRange - distance) / 20);
 
                 // Pull toward black hole with spiral
-                this.vx += Math.cos(angle) * pullStrength * 0.1;
-                this.vy += Math.sin(angle) * pullStrength * 0.1;
+                this.vx += Math.cos(angle) * pullStrength * 0.15;
+                this.vy += Math.sin(angle) * pullStrength * 0.15;
 
-                // Add spiral
-                this.vx += Math.cos(angle + Math.PI / 2) * 0.5;
-                this.vy += Math.sin(angle + Math.PI / 2) * 0.5;
+                // Add spiral effect (perpendicular force)
+                this.vx += Math.cos(angle + Math.PI / 2) * 0.8;
+                this.vy += Math.sin(angle + Math.PI / 2) * 0.8;
             }
 
             // Apply velocity
             this.x += this.vx;
             this.y += this.vy;
 
-            // Damping
-            this.vx *= 0.98;
-            this.vy *= 0.98;
+            // Damping (less damping = more energetic)
+            this.vx *= 0.96;
+            this.vy *= 0.96;
 
-            // Check absorption
+            // Check absorption (absorbed when VERY close)
             if (distance < this.blackHole.eventHorizon) {
                 this.respawn();
-                this.vx = (Math.random() - 0.5) * 1;
-                this.vy = (Math.random() - 0.5) * 1;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = (Math.random() - 0.5) * 2;
+            }
+
+            // Check if offscreen and respawn from edges
+            const margin = 100;
+            if (this.x < -margin || this.x > canvas.width + margin ||
+                this.y < -margin || this.y > canvas.height + margin) {
+                this.respawn();
+                this.vx = (Math.random() - 0.5) * 3;
+                this.vy = (Math.random() - 0.5) * 3;
             }
         }
 
