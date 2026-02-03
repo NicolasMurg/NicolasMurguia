@@ -247,22 +247,51 @@ class BlackHole {
 
 // ==================== FUTURISTIC UTOPIA BACKGROUND ====================
 class Building {
-    constructor() {
-        this.x = Math.random() * canvas.width;
-        this.width = Math.random() * 60 + 40;
-        this.height = Math.random() * 200 + 150;
-        this.y = canvas.height - this.height;
-        this.color = Math.random() > 0.5 ? [100, 181, 246] : [206, 147, 216];
-        this.windowPattern = [];
+    constructor(x, width, layer) {
+        this.x = x;
+        this.width = width;
+        this.layer = layer; // 0 = back, 1 = mid, 2 = front
 
-        // Generate window pattern
-        for (let i = 0; i < Math.floor(this.height / 20); i++) {
-            this.windowPattern.push(Math.random() > 0.3);
+        // Taller buildings in back, shorter in front for depth
+        if (layer === 0) {
+            this.height = Math.random() * 250 + 300;
+            this.baseAlpha = 0.08;
+        } else if (layer === 1) {
+            this.height = Math.random() * 200 + 200;
+            this.baseAlpha = 0.12;
+        } else {
+            this.height = Math.random() * 150 + 120;
+            this.baseAlpha = 0.18;
         }
+
+        this.y = canvas.height - this.height;
+        this.color = [
+            [80, 160, 230],
+            [120, 200, 255],
+            [180, 130, 220],
+            [100, 220, 200],
+            [150, 180, 255]
+        ][Math.floor(Math.random() * 5)];
+
+        // Window grid
+        this.windowCols = Math.max(1, Math.floor(this.width / 18));
+        this.windowRows = Math.floor(this.height / 22);
+        this.windows = [];
+        for (let r = 0; r < this.windowRows; r++) {
+            this.windows[r] = [];
+            for (let c = 0; c < this.windowCols; c++) {
+                this.windows[r][c] = Math.random() > 0.25;
+            }
+        }
+
+        // Rooftop features
+        this.hasAntenna = Math.random() > 0.5;
+        this.antennaHeight = Math.random() * 40 + 20;
+        this.hasSpire = Math.random() > 0.7;
+        this.spireHeight = Math.random() * 60 + 30;
     }
 
     draw(scrollProgress) {
-        // Fade out during transition (0.4 to 0.6)
         let fadeOut;
         if (scrollProgress < 0.4) {
             fadeOut = 1;
@@ -271,28 +300,72 @@ class Building {
         } else {
             fadeOut = 1 - ((scrollProgress - 0.4) / 0.2);
         }
-
         if (fadeOut <= 0) return;
 
-        // Building structure
-        ctx.fillStyle = `rgba(${this.color[0]}, ${this.color[1]}, ${this.color[2]}, ${0.15 * fadeOut})`;
+        const r = this.color[0], g = this.color[1], b = this.color[2];
+        const a = this.baseAlpha * fadeOut;
+
+        // Building body
+        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`;
         ctx.fillRect(this.x, this.y, this.width, this.height);
 
-        // Building outline
-        ctx.strokeStyle = `rgba(${this.color[0]}, ${this.color[1]}, ${this.color[2]}, ${0.4 * fadeOut})`;
-        ctx.lineWidth = 2;
+        // Outline
+        ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${a * 2.5})`;
+        ctx.lineWidth = 1;
         ctx.strokeRect(this.x, this.y, this.width, this.height);
 
+        // Horizontal floor lines
+        for (let i = 0; i < this.windowRows; i++) {
+            const ly = this.y + i * 22;
+            ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${a * 0.8})`;
+            ctx.beginPath();
+            ctx.moveTo(this.x, ly);
+            ctx.lineTo(this.x + this.width, ly);
+            ctx.stroke();
+        }
+
         // Windows
-        ctx.fillStyle = `rgba(${this.color[0]}, ${this.color[1]}, ${this.color[2]}, ${0.6 * fadeOut})`;
-        for (let i = 0; i < this.windowPattern.length; i++) {
-            if (this.windowPattern[i]) {
-                const wx = this.x + this.width * 0.2;
-                const wy = this.y + i * 20 + 10;
-                const ww = this.width * 0.6;
-                const wh = 8;
-                ctx.fillRect(wx, wy, ww, wh);
+        const wPadX = 5;
+        const wPadY = 4;
+        const wWidth = (this.width - wPadX * 2) / this.windowCols - 3;
+        const wHeight = 10;
+        for (let r2 = 0; r2 < this.windowRows; r2++) {
+            for (let c = 0; c < this.windowCols; c++) {
+                if (this.windows[r2][c]) {
+                    const wx = this.x + wPadX + c * ((this.width - wPadX * 2) / this.windowCols) + 1.5;
+                    const wy = this.y + r2 * 22 + wPadY;
+                    // Window glow
+                    ctx.fillStyle = `rgba(${Math.min(255, r + 80)}, ${Math.min(255, g + 80)}, ${Math.min(255, b + 30)}, ${fadeOut * 0.5})`;
+                    ctx.fillRect(wx, wy, wWidth, wHeight);
+                }
             }
+        }
+
+        // Antenna
+        if (this.hasAntenna) {
+            ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${fadeOut * 0.6})`;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(this.x + this.width * 0.5, this.y);
+            ctx.lineTo(this.x + this.width * 0.5, this.y - this.antennaHeight);
+            ctx.stroke();
+            // Blinking light
+            const blink = Math.sin(Date.now() * 0.003 + this.x) * 0.5 + 0.5;
+            ctx.beginPath();
+            ctx.arc(this.x + this.width * 0.5, this.y - this.antennaHeight, 3, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 80, 80, ${blink * fadeOut})`;
+            ctx.fill();
+        }
+
+        // Spire
+        if (this.hasSpire) {
+            ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a * 1.5})`;
+            ctx.beginPath();
+            ctx.moveTo(this.x + this.width * 0.35, this.y);
+            ctx.lineTo(this.x + this.width * 0.5, this.y - this.spireHeight);
+            ctx.lineTo(this.x + this.width * 0.65, this.y);
+            ctx.closePath();
+            ctx.fill();
         }
     }
 }
@@ -300,13 +373,18 @@ class Building {
 class Plant {
     constructor() {
         this.x = Math.random() * canvas.width;
-        this.y = canvas.height - Math.random() * 100 - 50;
-        this.size = Math.random() * 30 + 20;
-        this.type = Math.floor(Math.random() * 2);
+        this.y = canvas.height - Math.random() * 40 - 10;
+        this.size = Math.random() * 25 + 15;
+        this.type = Math.floor(Math.random() * 3);
+        // Pre-calculate random offsets so they don't jitter each frame
+        this.grassOffsets = [];
+        for (let i = -3; i <= 3; i++) {
+            this.grassOffsets.push((Math.random() - 0.5) * 6);
+        }
+        this.leafAngle = Math.random() * 0.5 + 0.2;
     }
 
     draw(scrollProgress) {
-        // Fade out during transition (0.4 to 0.6)
         let fadeOut;
         if (scrollProgress < 0.4) {
             fadeOut = 1;
@@ -315,35 +393,83 @@ class Plant {
         } else {
             fadeOut = 1 - ((scrollProgress - 0.4) / 0.2);
         }
-
         if (fadeOut <= 0) return;
 
-        ctx.strokeStyle = `rgba(100, 200, 150, ${0.6 * fadeOut})`;
-        ctx.lineWidth = 3;
-
         if (this.type === 0) {
-            // Simple plant
+            // Tree with trunk and canopy
+            ctx.strokeStyle = `rgba(80, 160, 120, ${0.5 * fadeOut})`;
+            ctx.lineWidth = 3;
             ctx.beginPath();
             ctx.moveTo(this.x, this.y);
             ctx.lineTo(this.x, this.y - this.size);
             ctx.stroke();
 
-            // Leaves
+            // Canopy (layered circles)
+            ctx.fillStyle = `rgba(60, 200, 130, ${0.25 * fadeOut})`;
             ctx.beginPath();
-            ctx.arc(this.x - 5, this.y - this.size * 0.7, 8, 0, Math.PI * 2);
-            ctx.arc(this.x + 5, this.y - this.size * 0.5, 8, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(100, 200, 150, ${0.4 * fadeOut})`;
+            ctx.arc(this.x, this.y - this.size - 8, 12, 0, Math.PI * 2);
             ctx.fill();
-        } else {
-            // Grass-like
-            for (let i = -2; i <= 2; i++) {
+            ctx.fillStyle = `rgba(80, 220, 150, ${0.2 * fadeOut})`;
+            ctx.beginPath();
+            ctx.arc(this.x - 7, this.y - this.size + 2, 9, 0, Math.PI * 2);
+            ctx.arc(this.x + 7, this.y - this.size + 2, 9, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (this.type === 1) {
+            // Grass cluster
+            ctx.strokeStyle = `rgba(100, 200, 150, ${0.4 * fadeOut})`;
+            ctx.lineWidth = 2;
+            let idx = 0;
+            for (let i = -3; i <= 3; i++) {
                 ctx.beginPath();
-                ctx.moveTo(this.x + i * 5, this.y);
-                ctx.lineTo(this.x + i * 5 + (Math.random() - 0.5) * 3, this.y - this.size * 0.6);
+                ctx.moveTo(this.x + i * 4, this.y);
+                ctx.quadraticCurveTo(
+                    this.x + i * 4 + this.grassOffsets[idx],
+                    this.y - this.size * 0.5,
+                    this.x + i * 4 + this.grassOffsets[idx] * 1.5,
+                    this.y - this.size * 0.7
+                );
                 ctx.stroke();
+                idx++;
             }
+        } else {
+            // Glowing flower
+            ctx.strokeStyle = `rgba(80, 180, 140, ${0.4 * fadeOut})`;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y);
+            ctx.quadraticCurveTo(this.x + 5, this.y - this.size * 0.6, this.x + 3, this.y - this.size);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(this.x + 3, this.y - this.size - 3, 4, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(200, 150, 255, ${0.5 * fadeOut})`;
+            ctx.fill();
         }
     }
+}
+
+// Generate skyline buildings in layers
+function generateBuildings() {
+    const result = [];
+    // 3 layers: back, mid, front
+    for (let layer = 0; layer < 3; layer++) {
+        let x = -20;
+        while (x < canvas.width + 20) {
+            const width = Math.random() * 50 + 30 + (2 - layer) * 15;
+            const gap = Math.random() * 8 + 2;
+            result.push(new Building(x, width, layer));
+            x += width + gap;
+        }
+    }
+    return result;
+}
+
+function generatePlants() {
+    const result = [];
+    for (let i = 0; i < 60; i++) {
+        result.push(new Plant());
+    }
+    return result;
 }
 
 // ==================== DUST PARTICLES ====================
@@ -415,8 +541,8 @@ class Star {
 // ==================== INITIALIZATION ====================
 const blackHole = new BlackHole();
 const mathEquations = Array.from({ length: 60 }, () => new MathEquation(blackHole, true));
-const buildings = Array.from({ length: 15 }, () => new Building());
-const plants = Array.from({ length: 40 }, () => new Plant());
+const buildings = generateBuildings();
+const plants = generatePlants();
 const dustParticles = Array.from({ length: 200 }, () => new DustParticle(blackHole));
 const stars = Array.from({ length: 150 }, () => new Star());
 
@@ -464,6 +590,16 @@ function animate() {
     // Draw futuristic cityscape (fades out during transition)
     buildings.forEach(building => building.draw(scrollProgress));
     plants.forEach(plant => plant.draw(scrollProgress));
+
+    // Ground horizon glow
+    if (utopiaOpacity > 0) {
+        const groundGlow = ctx.createLinearGradient(0, canvas.height - 60, 0, canvas.height);
+        groundGlow.addColorStop(0, 'rgba(0, 0, 0, 0)');
+        groundGlow.addColorStop(0.5, `rgba(80, 200, 180, ${0.08 * utopiaOpacity})`);
+        groundGlow.addColorStop(1, `rgba(100, 180, 255, ${0.15 * utopiaOpacity})`);
+        ctx.fillStyle = groundGlow;
+        ctx.fillRect(0, canvas.height - 60, canvas.width, 60);
+    }
 
     // Draw stars (fade in during transition)
     if (transitionFactor > 0) {
