@@ -9,6 +9,19 @@ body {
     background: #0a0a0a;
     color: #e0e0e0;
     line-height: 1.6;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Canvas background layer */
+#background-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0a 70%);
 }
 
 a {
@@ -28,8 +41,9 @@ a:hover {
     align-items: center;
     justify-content: center;
     text-align: center;
-    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+    background: transparent;
     padding: 2rem;
+    position: relative;
 }
 
 .hero-content h1 {
@@ -76,6 +90,7 @@ a:hover {
     max-width: 900px;
     margin: 0 auto;
     padding: 5rem 2rem;
+    position: relative;
 }
 
 .section-title {
@@ -89,7 +104,8 @@ a:hover {
 
 /* Cards */
 .card {
-    background: #141414;
+    background: rgba(20, 20, 20, 0.85);
+    backdrop-filter: blur(10px);
     border: 1px solid #1e1e1e;
     border-radius: 12px;
     padding: 1.5rem;
