@@ -249,7 +249,15 @@ class Building {
     }
 
     draw(scrollProgress) {
-        const fadeOut = Math.max(0, 1 - scrollProgress * 2);
+        // Fade out during transition (0.4 to 0.6)
+        let fadeOut;
+        if (scrollProgress < 0.4) {
+            fadeOut = 1;
+        } else if (scrollProgress > 0.6) {
+            fadeOut = 0;
+        } else {
+            fadeOut = 1 - ((scrollProgress - 0.4) / 0.2);
+        }
 
         if (fadeOut <= 0) return;
 
@@ -285,7 +293,15 @@ class Plant {
     }
 
     draw(scrollProgress) {
-        const fadeOut = Math.max(0, 1 - scrollProgress * 2);
+        // Fade out during transition (0.4 to 0.6)
+        let fadeOut;
+        if (scrollProgress < 0.4) {
+            fadeOut = 1;
+        } else if (scrollProgress > 0.6) {
+            fadeOut = 0;
+        } else {
+            fadeOut = 1 - ((scrollProgress - 0.4) / 0.2);
+        }
 
         if (fadeOut <= 0) return;
 
@@ -364,34 +380,80 @@ class DustParticle {
     }
 }
 
+// ==================== STARS ====================
+class Star {
+    constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2;
+        this.opacity = Math.random() * 0.7 + 0.3;
+        this.twinkleSpeed = Math.random() * 0.02 + 0.01;
+    }
+
+    draw(transitionFactor) {
+        const twinkle = Math.sin(Date.now() * this.twinkleSpeed) * 0.3 + 0.7;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity * twinkle * transitionFactor})`;
+        ctx.fill();
+    }
+}
+
 // ==================== INITIALIZATION ====================
 const blackHole = new BlackHole();
 const mathEquations = Array.from({ length: 60 }, () => new MathEquation(blackHole, true));
 const buildings = Array.from({ length: 15 }, () => new Building());
 const plants = Array.from({ length: 40 }, () => new Plant());
 const dustParticles = Array.from({ length: 200 }, () => new DustParticle(blackHole));
+const stars = Array.from({ length: 150 }, () => new Star());
 
 // ==================== ANIMATION LOOP ====================
 function animate() {
     const scrollProgress = Math.min(1, window.scrollY / (document.body.scrollHeight - window.innerHeight));
 
-    // Clear with gradient background
-    if (scrollProgress < 0.5) {
-        // Futuristic utopia gradient
-        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        gradient.addColorStop(0, `rgba(100, 200, 255, ${0.15 * (1 - scrollProgress * 2)})`);
-        gradient.addColorStop(1, `rgba(150, 100, 200, ${0.1 * (1 - scrollProgress * 2)})`);
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Smooth transition between utopia and space
+    // Transition window: 0.4 to 0.6 (centered at 0.5)
+    let transitionFactor;
+    if (scrollProgress < 0.4) {
+        transitionFactor = 0; // Full utopia
+    } else if (scrollProgress > 0.6) {
+        transitionFactor = 1; // Full space
     } else {
-        // Space gradient
-        ctx.fillStyle = '#000000';
+        // Smooth transition between 0.4 and 0.6
+        transitionFactor = (scrollProgress - 0.4) / 0.2;
+    }
+
+    // Blend background colors
+    const utopiaGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    const utopiaOpacity = 1 - transitionFactor;
+
+    if (utopiaOpacity > 0) {
+        utopiaGradient.addColorStop(0, `rgba(100, 200, 255, ${0.15 * utopiaOpacity})`);
+        utopiaGradient.addColorStop(1, `rgba(150, 100, 200, ${0.1 * utopiaOpacity})`);
+        ctx.fillStyle = utopiaGradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
-    // Draw futuristic cityscape
+    // Layer space gradient on top with increasing opacity
+    if (transitionFactor > 0) {
+        const spaceGradient = ctx.createRadialGradient(
+            canvas.width / 2, canvas.height / 2, 0,
+            canvas.width / 2, canvas.height / 2, canvas.height
+        );
+        spaceGradient.addColorStop(0, `rgba(10, 10, 30, ${transitionFactor})`);
+        spaceGradient.addColorStop(1, `rgba(0, 0, 0, ${transitionFactor})`);
+        ctx.fillStyle = spaceGradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // Draw futuristic cityscape (fades out during transition)
     buildings.forEach(building => building.draw(scrollProgress));
     plants.forEach(plant => plant.draw(scrollProgress));
+
+    // Draw stars (fade in during transition)
+    if (transitionFactor > 0) {
+        stars.forEach(star => star.draw(transitionFactor));
+    }
 
     // Update and draw black hole
     blackHole.update(scrollProgress);
