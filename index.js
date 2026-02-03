@@ -69,30 +69,39 @@ class MathEquation {
             const dy = this.blackHole.y - this.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
 
-            // Only pull if within range
-            const attractionRange = 350;
-            if (distance < attractionRange) {
+            // Pull if within range
+            const attractionRange = 400;
+            if (distance < attractionRange && distance > 0) {
                 const angle = Math.atan2(dy, dx);
-                const pullStrength = Math.min(12, (attractionRange - distance) / 20);
+                // Strong inward pull that increases as symbols get closer
+                const pullStrength = (attractionRange - distance) / distance * 2;
 
-                // Pull toward black hole with spiral
-                this.vx += Math.cos(angle) * pullStrength * 0.15;
-                this.vy += Math.sin(angle) * pullStrength * 0.15;
+                // Dominant inward force
+                this.vx += Math.cos(angle) * pullStrength * 0.4;
+                this.vy += Math.sin(angle) * pullStrength * 0.4;
 
-                // Add spiral effect (perpendicular force)
-                this.vx += Math.cos(angle + Math.PI / 2) * 0.8;
-                this.vy += Math.sin(angle + Math.PI / 2) * 0.8;
+                // Subtle spiral (scales down with distance so it doesn't fling)
+                const spiralStrength = Math.max(0, 0.3 * (1 - distance / attractionRange));
+                this.vx += Math.cos(angle + Math.PI / 2) * spiralStrength;
+                this.vy += Math.sin(angle + Math.PI / 2) * spiralStrength;
             }
 
             // Apply velocity
             this.x += this.vx;
             this.y += this.vy;
 
-            // Damping (less damping = more energetic)
-            this.vx *= 0.96;
-            this.vy *= 0.96;
+            // Strong damping to prevent flinging
+            this.vx *= 0.92;
+            this.vy *= 0.92;
 
-            // Check absorption (absorbed when VERY close)
+            // Cap max speed to prevent escape
+            const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+            if (speed > 6) {
+                this.vx = (this.vx / speed) * 6;
+                this.vy = (this.vy / speed) * 6;
+            }
+
+            // Check absorption
             if (distance < this.blackHole.eventHorizon) {
                 this.respawn();
                 this.vx = (Math.random() - 0.5) * 2;
@@ -104,8 +113,8 @@ class MathEquation {
             if (this.x < -margin || this.x > canvas.width + margin ||
                 this.y < -margin || this.y > canvas.height + margin) {
                 this.respawn();
-                this.vx = (Math.random() - 0.5) * 3;
-                this.vy = (Math.random() - 0.5) * 3;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = (Math.random() - 0.5) * 2;
             }
         }
 
