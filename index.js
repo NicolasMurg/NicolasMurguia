@@ -64,57 +64,49 @@ class MathEquation {
             if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
             if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
         } else {
-            // Black hole active: proximity-based gravity
+            // Friction — symbols slow down naturally every frame
+            this.vx *= 0.985;
+            this.vy *= 0.985;
+
+            // Black hole gravity
             const dx = this.blackHole.x - this.x;
             const dy = this.blackHole.y - this.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
 
-            // Pull if within range
-            const attractionRange = 400;
-            if (distance < attractionRange && distance > 0) {
-                const angle = Math.atan2(dy, dx);
-                // Strong inward pull that increases as symbols get closer
-                const pullStrength = (attractionRange - distance) / distance * 2;
+            if (distance > 0) {
+                // Normalized direction toward black hole
+                const nx = dx / distance;
+                const ny = dy / distance;
 
-                // Dominant inward force
-                this.vx += Math.cos(angle) * pullStrength * 0.4;
-                this.vy += Math.sin(angle) * pullStrength * 0.4;
-
-                // Subtle spiral (scales down with distance so it doesn't fling)
-                const spiralStrength = Math.max(0, 0.3 * (1 - distance / attractionRange));
-                this.vx += Math.cos(angle + Math.PI / 2) * spiralStrength;
-                this.vy += Math.sin(angle + Math.PI / 2) * spiralStrength;
+                // Gravity: stronger when closer (inverse distance, capped)
+                const gravity = Math.min(3, 800 / (distance * distance) * 10);
+                this.vx += nx * gravity;
+                this.vy += ny * gravity;
             }
 
             // Apply velocity
             this.x += this.vx;
             this.y += this.vy;
 
-            // Strong damping to prevent flinging
-            this.vx *= 0.92;
-            this.vy *= 0.92;
+            // Recalculate distance after moving
+            const newDx = this.blackHole.x - this.x;
+            const newDy = this.blackHole.y - this.y;
+            const newDistance = Math.sqrt(newDx * newDx + newDy * newDy);
 
-            // Cap max speed to prevent escape
-            const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-            if (speed > 6) {
-                this.vx = (this.vx / speed) * 6;
-                this.vy = (this.vy / speed) * 6;
-            }
-
-            // Check absorption
-            if (distance < this.blackHole.eventHorizon) {
+            // Absorbed when within event horizon
+            if (newDistance < this.blackHole.eventHorizon) {
                 this.respawn();
-                this.vx = (Math.random() - 0.5) * 2;
-                this.vy = (Math.random() - 0.5) * 2;
+                this.vx = (Math.random() - 0.5) * 1;
+                this.vy = (Math.random() - 0.5) * 1;
             }
 
-            // Check if offscreen and respawn from edges
+            // Respawn if offscreen
             const margin = 100;
             if (this.x < -margin || this.x > canvas.width + margin ||
                 this.y < -margin || this.y > canvas.height + margin) {
                 this.respawn();
-                this.vx = (Math.random() - 0.5) * 2;
-                this.vy = (Math.random() - 0.5) * 2;
+                this.vx = (Math.random() - 0.5) * 1;
+                this.vy = (Math.random() - 0.5) * 1;
             }
         }
 
