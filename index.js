@@ -22,26 +22,26 @@ class MathEquation {
     constructor(blackHole, isInitial = false) {
         this.blackHole = blackHole;
         this.respawn(isInitial);
+        this.vx = (Math.random() - 0.5) * 1;
+        this.vy = (Math.random() - 0.5) * 1;
     }
 
     respawn(isInitial = false) {
         if (isInitial) {
-            // Initial load: spawn randomly throughout the screen
             this.x = Math.random() * canvas.width;
             this.y = Math.random() * canvas.height;
         } else {
-            // After absorption: spawn from edges of screen
             const side = Math.floor(Math.random() * 4);
-            if (side === 0) { // top
+            if (side === 0) {
                 this.x = Math.random() * canvas.width;
                 this.y = -50;
-            } else if (side === 1) { // right
+            } else if (side === 1) {
                 this.x = canvas.width + 50;
                 this.y = Math.random() * canvas.height;
-            } else if (side === 2) { // bottom
+            } else if (side === 2) {
                 this.x = Math.random() * canvas.width;
                 this.y = canvas.height + 50;
-            } else { // left
+            } else {
                 this.x = -50;
                 this.y = Math.random() * canvas.height;
             }
@@ -52,32 +52,51 @@ class MathEquation {
         this.opacity = Math.random() * 0.5 + 0.5;
         this.rotation = Math.random() * Math.PI * 2;
         this.rotationSpeed = (Math.random() - 0.5) * 0.02;
-        this.absorbed = false;
     }
 
     update(scrollProgress) {
-        if (scrollProgress < 0.3) {
-            // Before black hole appears, just float
-            this.x += (Math.random() - 0.5) * 0.5;
-            this.y += (Math.random() - 0.5) * 0.5;
+        if (scrollProgress < 0.5) {
+            // Before black hole: gentle floating
+            this.x += this.vx;
+            this.y += this.vy;
+
+            // Bounce off edges
+            if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+            if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
         } else {
-            // Black hole gravity pulls math symbols
+            // Black hole active: proximity-based gravity
             const dx = this.blackHole.x - this.x;
             const dy = this.blackHole.y - this.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
-            const angle = Math.atan2(dy, dx);
 
-            // Gravity strength increases as black hole fades in
-            const gravityStrength = (scrollProgress - 0.3) * 2;
-            const pullForce = Math.min(5, (1000 / distance) * gravityStrength);
+            // Only pull if within range
+            const attractionRange = 300;
+            if (distance < attractionRange) {
+                const angle = Math.atan2(dy, dx);
+                const pullStrength = Math.min(8, (attractionRange - distance) / 30);
 
-            // Spiral toward black hole
-            this.x += Math.cos(angle) * pullForce + Math.cos(angle + Math.PI / 2) * 1.5;
-            this.y += Math.sin(angle) * pullForce + Math.sin(angle + Math.PI / 2) * 1.5;
+                // Pull toward black hole with spiral
+                this.vx += Math.cos(angle) * pullStrength * 0.1;
+                this.vy += Math.sin(angle) * pullStrength * 0.1;
 
-            // Check if absorbed
+                // Add spiral
+                this.vx += Math.cos(angle + Math.PI / 2) * 0.5;
+                this.vy += Math.sin(angle + Math.PI / 2) * 0.5;
+            }
+
+            // Apply velocity
+            this.x += this.vx;
+            this.y += this.vy;
+
+            // Damping
+            this.vx *= 0.98;
+            this.vy *= 0.98;
+
+            // Check absorption
             if (distance < this.blackHole.eventHorizon) {
                 this.respawn();
+                this.vx = (Math.random() - 0.5) * 1;
+                this.vy = (Math.random() - 0.5) * 1;
             }
         }
 
@@ -93,7 +112,6 @@ class MathEquation {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
-        // Add glow effect
         ctx.shadowBlur = 10;
         ctx.shadowColor = 'rgba(100, 181, 246, 0.5)';
 
@@ -104,31 +122,50 @@ class MathEquation {
     }
 }
 
-// ==================== BLACK HOLE ====================
+// ==================== BOUNCING BLACK HOLE ====================
 class BlackHole {
     constructor() {
         this.x = canvas.width / 2;
         this.y = canvas.height / 2;
-        this.eventHorizon = 60; // Point of no return
-        this.radius = 120; // Visible black disk
+        this.vx = 3;
+        this.vy = 2.5;
+        this.eventHorizon = 70;
+        this.radius = 130;
         this.accretionDiskRadius = 250;
         this.time = 0;
     }
 
+    update(scrollProgress) {
+        if (scrollProgress >= 0.5) {
+            // Bounce off walls
+            this.x += this.vx;
+            this.y += this.vy;
+
+            if (this.x - this.accretionDiskRadius < 0 || this.x + this.accretionDiskRadius > canvas.width) {
+                this.vx *= -1;
+                this.x = Math.max(this.accretionDiskRadius, Math.min(canvas.width - this.accretionDiskRadius, this.x));
+            }
+            if (this.y - this.accretionDiskRadius < 0 || this.y + this.accretionDiskRadius > canvas.height) {
+                this.vy *= -1;
+                this.y = Math.max(this.accretionDiskRadius, Math.min(canvas.height - this.accretionDiskRadius, this.y));
+            }
+        }
+    }
+
     draw(scrollProgress) {
-        const fadeIn = Math.max(0, (scrollProgress - 0.3) * 2);
+        const fadeIn = Math.max(0, (scrollProgress - 0.5) * 2);
 
         if (fadeIn <= 0) return;
 
-        this.time += 0.01;
+        this.time += 0.015;
 
-        // Draw gravitational lensing effect (outer glow)
+        // Gravitational lensing
         const lensGradient = ctx.createRadialGradient(
             this.x, this.y, this.eventHorizon,
             this.x, this.y, this.accretionDiskRadius * 1.5
         );
-        lensGradient.addColorStop(0, `rgba(20, 20, 60, ${0.3 * fadeIn})`);
-        lensGradient.addColorStop(0.5, `rgba(40, 20, 80, ${0.15 * fadeIn})`);
+        lensGradient.addColorStop(0, `rgba(20, 20, 60, ${0.4 * fadeIn})`);
+        lensGradient.addColorStop(0.5, `rgba(40, 20, 80, ${0.2 * fadeIn})`);
         lensGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
         ctx.beginPath();
@@ -136,7 +173,7 @@ class BlackHole {
         ctx.fillStyle = lensGradient;
         ctx.fill();
 
-        // Draw accretion disk (rotating matter)
+        // Rotating accretion disk
         ctx.save();
         ctx.translate(this.x, this.y);
 
@@ -148,12 +185,12 @@ class BlackHole {
                 0, 0, this.accretionDiskRadius
             );
 
-            diskGradient.addColorStop(0, `rgba(255, 120, 0, ${0.6 * fadeIn})`);
-            diskGradient.addColorStop(0.3, `rgba(255, 80, 0, ${0.4 * fadeIn})`);
-            diskGradient.addColorStop(0.6, `rgba(200, 40, 100, ${0.2 * fadeIn})`);
+            diskGradient.addColorStop(0, `rgba(255, 120, 0, ${0.7 * fadeIn})`);
+            diskGradient.addColorStop(0.3, `rgba(255, 80, 0, ${0.5 * fadeIn})`);
+            diskGradient.addColorStop(0.6, `rgba(200, 40, 100, ${0.3 * fadeIn})`);
             diskGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
-            ctx.globalAlpha = 0.3;
+            ctx.globalAlpha = 0.35;
             ctx.beginPath();
             ctx.ellipse(0, 0, this.accretionDiskRadius, this.accretionDiskRadius * 0.3, 0, 0, Math.PI * 2);
             ctx.fillStyle = diskGradient;
@@ -163,60 +200,120 @@ class BlackHole {
         ctx.restore();
         ctx.globalAlpha = 1;
 
-        // Draw event horizon glow
+        // Event horizon glow
         const horizonGradient = ctx.createRadialGradient(
             this.x, this.y, this.eventHorizon * 0.5,
             this.x, this.y, this.radius
         );
-        horizonGradient.addColorStop(0, `rgba(255, 150, 0, ${0.8 * fadeIn})`);
-        horizonGradient.addColorStop(0.5, `rgba(255, 100, 0, ${0.5 * fadeIn})`);
-        horizonGradient.addColorStop(1, `rgba(100, 20, 80, ${0.2 * fadeIn})`);
+        horizonGradient.addColorStop(0, `rgba(255, 150, 0, ${0.9 * fadeIn})`);
+        horizonGradient.addColorStop(0.5, `rgba(255, 100, 0, ${0.6 * fadeIn})`);
+        horizonGradient.addColorStop(1, `rgba(100, 20, 80, ${0.3 * fadeIn})`);
 
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.fillStyle = horizonGradient;
         ctx.fill();
 
-        // Draw black hole core (pure black)
+        // Black hole core
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.eventHorizon, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(0, 0, 0, ${fadeIn})`;
         ctx.fill();
 
-        // Draw photon sphere (bright ring)
+        // Photon sphere
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius * 0.8, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(255, 200, 100, ${0.7 * fadeIn})`;
+        ctx.strokeStyle = `rgba(255, 200, 100, ${0.8 * fadeIn})`;
         ctx.lineWidth = 2;
         ctx.shadowBlur = 15;
-        ctx.shadowColor = `rgba(255, 200, 100, ${0.8 * fadeIn})`;
+        ctx.shadowColor = `rgba(255, 200, 100, ${0.9 * fadeIn})`;
         ctx.stroke();
         ctx.shadowBlur = 0;
     }
-
-    updatePosition() {
-        this.x = canvas.width / 2;
-        this.y = canvas.height / 2;
-    }
 }
 
-// ==================== STARS ====================
-class Star {
+// ==================== FUTURISTIC UTOPIA BACKGROUND ====================
+class Building {
     constructor() {
         this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 2;
-        this.opacity = Math.random() * 0.7 + 0.3;
-        this.twinkleSpeed = Math.random() * 0.02 + 0.01;
+        this.width = Math.random() * 60 + 40;
+        this.height = Math.random() * 200 + 150;
+        this.y = canvas.height - this.height;
+        this.color = Math.random() > 0.5 ? [100, 181, 246] : [206, 147, 216];
+        this.windowPattern = [];
+
+        // Generate window pattern
+        for (let i = 0; i < Math.floor(this.height / 20); i++) {
+            this.windowPattern.push(Math.random() > 0.3);
+        }
     }
 
     draw(scrollProgress) {
-        const fadeIn = Math.max(0, (scrollProgress - 0.2) * 1.5);
-        const twinkle = Math.sin(Date.now() * this.twinkleSpeed) * 0.3 + 0.7;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity * twinkle * fadeIn})`;
-        ctx.fill();
+        const fadeOut = Math.max(0, 1 - scrollProgress * 2);
+
+        if (fadeOut <= 0) return;
+
+        // Building structure
+        ctx.fillStyle = `rgba(${this.color[0]}, ${this.color[1]}, ${this.color[2]}, ${0.15 * fadeOut})`;
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+
+        // Building outline
+        ctx.strokeStyle = `rgba(${this.color[0]}, ${this.color[1]}, ${this.color[2]}, ${0.4 * fadeOut})`;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(this.x, this.y, this.width, this.height);
+
+        // Windows
+        ctx.fillStyle = `rgba(${this.color[0]}, ${this.color[1]}, ${this.color[2]}, ${0.6 * fadeOut})`;
+        for (let i = 0; i < this.windowPattern.length; i++) {
+            if (this.windowPattern[i]) {
+                const wx = this.x + this.width * 0.2;
+                const wy = this.y + i * 20 + 10;
+                const ww = this.width * 0.6;
+                const wh = 8;
+                ctx.fillRect(wx, wy, ww, wh);
+            }
+        }
+    }
+}
+
+class Plant {
+    constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = canvas.height - Math.random() * 100 - 50;
+        this.size = Math.random() * 30 + 20;
+        this.type = Math.floor(Math.random() * 2);
+    }
+
+    draw(scrollProgress) {
+        const fadeOut = Math.max(0, 1 - scrollProgress * 2);
+
+        if (fadeOut <= 0) return;
+
+        ctx.strokeStyle = `rgba(100, 200, 150, ${0.6 * fadeOut})`;
+        ctx.lineWidth = 3;
+
+        if (this.type === 0) {
+            // Simple plant
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y);
+            ctx.lineTo(this.x, this.y - this.size);
+            ctx.stroke();
+
+            // Leaves
+            ctx.beginPath();
+            ctx.arc(this.x - 5, this.y - this.size * 0.7, 8, 0, Math.PI * 2);
+            ctx.arc(this.x + 5, this.y - this.size * 0.5, 8, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(100, 200, 150, ${0.4 * fadeOut})`;
+            ctx.fill();
+        } else {
+            // Grass-like
+            for (let i = -2; i <= 2; i++) {
+                ctx.beginPath();
+                ctx.moveTo(this.x + i * 5, this.y);
+                ctx.lineTo(this.x + i * 5 + (Math.random() - 0.5) * 3, this.y - this.size * 0.6);
+                ctx.stroke();
+            }
+        }
     }
 }
 
@@ -235,7 +332,7 @@ class DustParticle {
         this.size = Math.random() * 1.5 + 0.5;
         this.speed = Math.random() * 1 + 0.5;
         this.opacity = Math.random() * 0.6 + 0.3;
-        this.hue = Math.random() * 60 + 20; // Orange to red
+        this.hue = Math.random() * 60 + 20;
     }
 
     update() {
@@ -244,18 +341,16 @@ class DustParticle {
         const distance = Math.sqrt(this.x * this.x + this.y * this.y);
         const angle = Math.atan2(dy, dx);
 
-        // Spiral toward black hole
         this.x += Math.cos(angle) * this.speed + Math.cos(angle + Math.PI / 2) * 0.8;
         this.y += Math.sin(angle) * this.speed + Math.sin(angle + Math.PI / 2) * 0.8;
 
-        // Reset if absorbed
         if (distance < this.blackHole.eventHorizon) {
             this.reset();
         }
     }
 
     draw(scrollProgress) {
-        const fadeIn = Math.max(0, (scrollProgress - 0.3) * 2);
+        const fadeIn = Math.max(0, (scrollProgress - 0.5) * 2);
         ctx.beginPath();
         ctx.arc(
             this.blackHole.x + this.x,
@@ -272,28 +367,43 @@ class DustParticle {
 // ==================== INITIALIZATION ====================
 const blackHole = new BlackHole();
 const mathEquations = Array.from({ length: 60 }, () => new MathEquation(blackHole, true));
-const stars = Array.from({ length: 150 }, () => new Star());
+const buildings = Array.from({ length: 15 }, () => new Building());
+const plants = Array.from({ length: 40 }, () => new Plant());
 const dustParticles = Array.from({ length: 200 }, () => new DustParticle(blackHole));
 
 // ==================== ANIMATION LOOP ====================
 function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     const scrollProgress = Math.min(1, window.scrollY / (document.body.scrollHeight - window.innerHeight));
 
-    // Draw stars background
-    stars.forEach(star => star.draw(scrollProgress));
+    // Clear with gradient background
+    if (scrollProgress < 0.5) {
+        // Futuristic utopia gradient
+        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        gradient.addColorStop(0, `rgba(100, 200, 255, ${0.15 * (1 - scrollProgress * 2)})`);
+        gradient.addColorStop(1, `rgba(150, 100, 200, ${0.1 * (1 - scrollProgress * 2)})`);
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    } else {
+        // Space gradient
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
 
-    // Draw and update dust particles
-    if (scrollProgress > 0.3) {
+    // Draw futuristic cityscape
+    buildings.forEach(building => building.draw(scrollProgress));
+    plants.forEach(plant => plant.draw(scrollProgress));
+
+    // Update and draw black hole
+    blackHole.update(scrollProgress);
+    blackHole.draw(scrollProgress);
+
+    // Draw dust particles
+    if (scrollProgress > 0.5) {
         dustParticles.forEach(particle => {
             particle.update();
             particle.draw(scrollProgress);
         });
     }
-
-    // Draw black hole
-    blackHole.draw(scrollProgress);
 
     // Update and draw math equations
     mathEquations.forEach(eq => {
@@ -305,11 +415,6 @@ function animate() {
 }
 
 animate();
-
-// Update positions on resize
-window.addEventListener('resize', () => {
-    blackHole.updatePosition();
-});
 
 // ==================== SCROLL ANIMATIONS ====================
 const observer = new IntersectionObserver((entries) => {
