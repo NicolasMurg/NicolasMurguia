@@ -19,26 +19,32 @@ const mathSymbols = [
 ];
 
 class MathEquation {
-    constructor(blackHole) {
+    constructor(blackHole, isInitial = false) {
         this.blackHole = blackHole;
-        this.respawn();
+        this.respawn(isInitial);
     }
 
-    respawn() {
-        // Start from edges of screen
-        const side = Math.floor(Math.random() * 4);
-        if (side === 0) { // top
+    respawn(isInitial = false) {
+        if (isInitial) {
+            // Initial load: spawn randomly throughout the screen
             this.x = Math.random() * canvas.width;
-            this.y = -50;
-        } else if (side === 1) { // right
-            this.x = canvas.width + 50;
             this.y = Math.random() * canvas.height;
-        } else if (side === 2) { // bottom
-            this.x = Math.random() * canvas.width;
-            this.y = canvas.height + 50;
-        } else { // left
-            this.x = -50;
-            this.y = Math.random() * canvas.height;
+        } else {
+            // After absorption: spawn from edges of screen
+            const side = Math.floor(Math.random() * 4);
+            if (side === 0) { // top
+                this.x = Math.random() * canvas.width;
+                this.y = -50;
+            } else if (side === 1) { // right
+                this.x = canvas.width + 50;
+                this.y = Math.random() * canvas.height;
+            } else if (side === 2) { // bottom
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + 50;
+            } else { // left
+                this.x = -50;
+                this.y = Math.random() * canvas.height;
+            }
         }
 
         this.text = mathSymbols[Math.floor(Math.random() * mathSymbols.length)];
@@ -265,7 +271,7 @@ class DustParticle {
 
 // ==================== INITIALIZATION ====================
 const blackHole = new BlackHole();
-const mathEquations = Array.from({ length: 60 }, () => new MathEquation(blackHole));
+const mathEquations = Array.from({ length: 60 }, () => new MathEquation(blackHole, true));
 const stars = Array.from({ length: 150 }, () => new Star());
 const dustParticles = Array.from({ length: 200 }, () => new DustParticle(blackHole));
 
