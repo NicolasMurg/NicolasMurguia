@@ -3,11 +3,11 @@ const canvas = document.getElementById('background-canvas');
 const ctx = canvas.getContext('2d');
 
 canvas.width = window.innerWidth;
-canvas.height = document.body.scrollHeight;
+canvas.height = window.innerHeight;
 
 window.addEventListener('resize', () => {
     canvas.width = window.innerWidth;
-    canvas.height = document.body.scrollHeight;
+    canvas.height = window.innerHeight;
 });
 
 // ==================== MATH EQUATIONS ====================
@@ -21,7 +21,7 @@ const mathSymbols = [
 class MathEquation {
     constructor() {
         this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height * 0.4; // Top 40% for math
+        this.y = Math.random() * canvas.height * 0.6; // Spread across more of the viewport
         this.text = mathSymbols[Math.floor(Math.random() * mathSymbols.length)];
         this.size = Math.random() * 20 + 15;
         this.opacity = Math.random() * 0.3 + 0.1;
@@ -87,7 +87,7 @@ class Particle {
 class BlackHole {
     constructor() {
         this.x = canvas.width / 2;
-        this.y = canvas.height * 0.7; // Lower in the page
+        this.y = canvas.height * 0.6; // Center vertically in viewport
         this.radius = 80;
         this.glowRadius = 200;
     }
@@ -125,7 +125,7 @@ class BlackHole {
 
     updatePosition() {
         this.x = canvas.width / 2;
-        this.y = canvas.height * 0.7;
+        this.y = canvas.height * 0.6;
     }
 }
 
