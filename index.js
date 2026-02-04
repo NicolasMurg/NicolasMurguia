@@ -245,50 +245,54 @@ class BlackHole {
     }
 }
 
-// ==================== FUTURISTIC UTOPIA BACKGROUND ====================
-class Building {
-    constructor(x, width, layer) {
-        this.x = x;
-        this.width = width;
-        this.layer = layer; // 0 = back, 1 = mid, 2 = front
+// ==================== MOUNTAIN & AURORA BACKGROUND ====================
+class Mountain {
+    constructor(layer) {
+        this.layer = layer; // 0 = far back, 1 = mid, 2 = front
+        this.points = [];
 
-        // Taller buildings in back, shorter in front for depth
+        // Layer-specific settings
         if (layer === 0) {
-            this.height = Math.random() * 250 + 300;
-            this.baseAlpha = 0.08;
+            this.baseY = canvas.height * 0.55;
+            this.peakMin = canvas.height * 0.15;
+            this.peakMax = canvas.height * 0.3;
+            this.color = [20, 30, 60];
+            this.baseAlpha = 0.6;
+            this.snowLine = 0.35;
         } else if (layer === 1) {
-            this.height = Math.random() * 200 + 200;
-            this.baseAlpha = 0.12;
+            this.baseY = canvas.height * 0.65;
+            this.peakMin = canvas.height * 0.25;
+            this.peakMax = canvas.height * 0.45;
+            this.color = [15, 22, 48];
+            this.baseAlpha = 0.75;
+            this.snowLine = 0.4;
         } else {
-            this.height = Math.random() * 150 + 120;
-            this.baseAlpha = 0.18;
+            this.baseY = canvas.height * 0.78;
+            this.peakMin = canvas.height * 0.4;
+            this.peakMax = canvas.height * 0.6;
+            this.color = [8, 14, 32];
+            this.baseAlpha = 0.9;
+            this.snowLine = 0.5;
         }
 
-        this.y = canvas.height - this.height;
-        this.color = [
-            [80, 160, 230],
-            [120, 200, 255],
-            [180, 130, 220],
-            [100, 220, 200],
-            [150, 180, 255]
-        ][Math.floor(Math.random() * 5)];
+        this._generatePoints();
+    }
 
-        // Window grid
-        this.windowCols = Math.max(1, Math.floor(this.width / 18));
-        this.windowRows = Math.floor(this.height / 22);
-        this.windows = [];
-        for (let r = 0; r < this.windowRows; r++) {
-            this.windows[r] = [];
-            for (let c = 0; c < this.windowCols; c++) {
-                this.windows[r][c] = Math.random() > 0.25;
-            }
+    _generatePoints() {
+        this.points = [];
+        const segments = Math.floor(canvas.width / (30 + this.layer * 20)) + 2;
+        const segWidth = canvas.width / (segments - 1);
+
+        for (let i = 0; i <= segments; i++) {
+            const x = i * segWidth - segWidth;
+            const peakHeight = this.peakMin + Math.random() * (this.peakMax - this.peakMin);
+            // Create jagged peaks with variation
+            const isMajorPeak = Math.random() > 0.6;
+            const y = isMajorPeak
+                ? canvas.height - peakHeight
+                : canvas.height - peakHeight * (0.5 + Math.random() * 0.35);
+            this.points.push({ x, y });
         }
-
-        // Rooftop features
-        this.hasAntenna = Math.random() > 0.5;
-        this.antennaHeight = Math.random() * 40 + 20;
-        this.hasSpire = Math.random() > 0.7;
-        this.spireHeight = Math.random() * 60 + 30;
     }
 
     draw(scrollProgress) {
@@ -302,86 +306,92 @@ class Building {
         }
         if (fadeOut <= 0) return;
 
-        const r = this.color[0], g = this.color[1], b = this.color[2];
+        const [r, g, b] = this.color;
         const a = this.baseAlpha * fadeOut;
 
-        // Building body
-        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`;
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+        // Draw mountain silhouette with smooth curves
+        ctx.beginPath();
+        ctx.moveTo(-10, canvas.height);
 
-        // Outline
-        ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${a * 2.5})`;
-        ctx.lineWidth = 1;
-        ctx.strokeRect(this.x, this.y, this.width, this.height);
-
-        // Horizontal floor lines
-        for (let i = 0; i < this.windowRows; i++) {
-            const ly = this.y + i * 22;
-            ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${a * 0.8})`;
-            ctx.beginPath();
-            ctx.moveTo(this.x, ly);
-            ctx.lineTo(this.x + this.width, ly);
-            ctx.stroke();
-        }
-
-        // Windows
-        const wPadX = 5;
-        const wPadY = 4;
-        const wWidth = (this.width - wPadX * 2) / this.windowCols - 3;
-        const wHeight = 10;
-        for (let r2 = 0; r2 < this.windowRows; r2++) {
-            for (let c = 0; c < this.windowCols; c++) {
-                if (this.windows[r2][c]) {
-                    const wx = this.x + wPadX + c * ((this.width - wPadX * 2) / this.windowCols) + 1.5;
-                    const wy = this.y + r2 * 22 + wPadY;
-                    // Window glow
-                    ctx.fillStyle = `rgba(${Math.min(255, r + 80)}, ${Math.min(255, g + 80)}, ${Math.min(255, b + 30)}, ${fadeOut * 0.5})`;
-                    ctx.fillRect(wx, wy, wWidth, wHeight);
+        for (let i = 0; i < this.points.length; i++) {
+            if (i === 0) {
+                ctx.lineTo(this.points[i].x, this.points[i].y);
+            } else {
+                // Smooth curve between points
+                const prev = this.points[i - 1];
+                const curr = this.points[i];
+                const cpx = (prev.x + curr.x) / 2;
+                ctx.quadraticCurveTo(prev.x, prev.y, cpx, (prev.y + curr.y) / 2);
+                if (i === this.points.length - 1) {
+                    ctx.lineTo(curr.x, curr.y);
                 }
             }
         }
 
-        // Antenna
-        if (this.hasAntenna) {
-            ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${fadeOut * 0.6})`;
-            ctx.lineWidth = 2;
+        ctx.lineTo(canvas.width + 10, canvas.height);
+        ctx.closePath();
+
+        // Mountain body gradient
+        const grad = ctx.createLinearGradient(0, canvas.height * 0.15, 0, canvas.height);
+        grad.addColorStop(0, `rgba(${r + 15}, ${g + 20}, ${b + 40}, ${a})`);
+        grad.addColorStop(0.5, `rgba(${r}, ${g}, ${b}, ${a})`);
+        grad.addColorStop(1, `rgba(${r - 5}, ${g - 5}, ${b + 10}, ${a * 0.9})`);
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        // Snow caps on peaks
+        if (this.layer < 2) {
+            ctx.save();
             ctx.beginPath();
-            ctx.moveTo(this.x + this.width * 0.5, this.y);
-            ctx.lineTo(this.x + this.width * 0.5, this.y - this.antennaHeight);
-            ctx.stroke();
-            // Blinking light
-            const blink = Math.sin(Date.now() * 0.003 + this.x) * 0.5 + 0.5;
-            ctx.beginPath();
-            ctx.arc(this.x + this.width * 0.5, this.y - this.antennaHeight, 3, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 80, 80, ${blink * fadeOut})`;
+            for (let i = 0; i < this.points.length; i++) {
+                const p = this.points[i];
+                const snowDepth = 25 + this.layer * 10;
+                if (p.y < canvas.height * this.snowLine) {
+                    ctx.moveTo(p.x - 15 - this.layer * 5, p.y + snowDepth);
+                    ctx.quadraticCurveTo(p.x - 8, p.y + 3, p.x, p.y);
+                    ctx.quadraticCurveTo(p.x + 8, p.y + 3, p.x + 15 + this.layer * 5, p.y + snowDepth);
+                }
+            }
+            ctx.fillStyle = `rgba(200, 210, 230, ${0.25 * fadeOut})`;
             ctx.fill();
+            ctx.restore();
         }
 
-        // Spire
-        if (this.hasSpire) {
-            ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a * 1.5})`;
-            ctx.beginPath();
-            ctx.moveTo(this.x + this.width * 0.35, this.y);
-            ctx.lineTo(this.x + this.width * 0.5, this.y - this.spireHeight);
-            ctx.lineTo(this.x + this.width * 0.65, this.y);
-            ctx.closePath();
-            ctx.fill();
+        // Subtle edge highlight (moonlight)
+        ctx.beginPath();
+        ctx.moveTo(this.points[0].x, this.points[0].y);
+        for (let i = 1; i < this.points.length; i++) {
+            const prev = this.points[i - 1];
+            const curr = this.points[i];
+            const cpx = (prev.x + curr.x) / 2;
+            ctx.quadraticCurveTo(prev.x, prev.y, cpx, (prev.y + curr.y) / 2);
         }
+        ctx.strokeStyle = `rgba(100, 140, 200, ${0.12 * fadeOut})`;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
     }
 }
 
-class Plant {
-    constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = canvas.height - Math.random() * 40 - 10;
-        this.size = Math.random() * 25 + 15;
-        this.type = Math.floor(Math.random() * 3);
-        // Pre-calculate random offsets so they don't jitter each frame
-        this.grassOffsets = [];
-        for (let i = -3; i <= 3; i++) {
-            this.grassOffsets.push((Math.random() - 0.5) * 6);
-        }
-        this.leafAngle = Math.random() * 0.5 + 0.2;
+class AuroraWave {
+    constructor(index, total) {
+        this.index = index;
+        this.total = total;
+        this.yBase = canvas.height * (0.08 + (index / total) * 0.3);
+        this.amplitude = 30 + Math.random() * 50;
+        this.frequency = 0.002 + Math.random() * 0.003;
+        this.speed = 0.0004 + Math.random() * 0.0006;
+        this.phase = Math.random() * Math.PI * 2;
+        this.thickness = 60 + Math.random() * 80;
+
+        // Aurora color - greens, teals, and purples
+        const palettes = [
+            { r: 50, g: 220, b: 120 },   // green
+            { r: 30, g: 200, b: 160 },   // teal
+            { r: 80, g: 180, b: 220 },   // cyan
+            { r: 120, g: 100, b: 220 },  // purple
+            { r: 60, g: 240, b: 100 },   // bright green
+        ];
+        this.color = palettes[Math.floor(Math.random() * palettes.length)];
     }
 
     draw(scrollProgress) {
@@ -395,79 +405,142 @@ class Plant {
         }
         if (fadeOut <= 0) return;
 
-        if (this.type === 0) {
-            // Tree with trunk and canopy
-            ctx.strokeStyle = `rgba(80, 160, 120, ${0.5 * fadeOut})`;
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.moveTo(this.x, this.y);
-            ctx.lineTo(this.x, this.y - this.size);
-            ctx.stroke();
+        const time = Date.now() * this.speed + this.phase;
+        const { r, g, b } = this.color;
 
-            // Canopy (layered circles)
-            ctx.fillStyle = `rgba(60, 200, 130, ${0.25 * fadeOut})`;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y - this.size - 8, 12, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = `rgba(80, 220, 150, ${0.2 * fadeOut})`;
-            ctx.beginPath();
-            ctx.arc(this.x - 7, this.y - this.size + 2, 9, 0, Math.PI * 2);
-            ctx.arc(this.x + 7, this.y - this.size + 2, 9, 0, Math.PI * 2);
-            ctx.fill();
-        } else if (this.type === 1) {
-            // Grass cluster
-            ctx.strokeStyle = `rgba(100, 200, 150, ${0.4 * fadeOut})`;
-            ctx.lineWidth = 2;
-            let idx = 0;
-            for (let i = -3; i <= 3; i++) {
-                ctx.beginPath();
-                ctx.moveTo(this.x + i * 4, this.y);
-                ctx.quadraticCurveTo(
-                    this.x + i * 4 + this.grassOffsets[idx],
-                    this.y - this.size * 0.5,
-                    this.x + i * 4 + this.grassOffsets[idx] * 1.5,
-                    this.y - this.size * 0.7
-                );
-                ctx.stroke();
-                idx++;
-            }
-        } else {
-            // Glowing flower
-            ctx.strokeStyle = `rgba(80, 180, 140, ${0.4 * fadeOut})`;
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(this.x, this.y);
-            ctx.quadraticCurveTo(this.x + 5, this.y - this.size * 0.6, this.x + 3, this.y - this.size);
-            ctx.stroke();
+        ctx.beginPath();
 
-            ctx.beginPath();
-            ctx.arc(this.x + 3, this.y - this.size - 3, 4, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(200, 150, 255, ${0.5 * fadeOut})`;
-            ctx.fill();
+        // Top edge of aurora ribbon
+        const topPoints = [];
+        for (let x = -20; x <= canvas.width + 20; x += 8) {
+            const wave1 = Math.sin(x * this.frequency + time) * this.amplitude;
+            const wave2 = Math.sin(x * this.frequency * 1.7 + time * 1.3) * this.amplitude * 0.4;
+            const y = this.yBase + wave1 + wave2;
+            topPoints.push({ x, y });
         }
+
+        // Draw filled aurora band
+        ctx.moveTo(topPoints[0].x, topPoints[0].y);
+        for (let i = 1; i < topPoints.length; i++) {
+            ctx.lineTo(topPoints[i].x, topPoints[i].y);
+        }
+        // Bottom edge (offset by thickness)
+        for (let i = topPoints.length - 1; i >= 0; i--) {
+            const extraWave = Math.sin(topPoints[i].x * this.frequency * 0.8 + time * 0.7) * 15;
+            ctx.lineTo(topPoints[i].x, topPoints[i].y + this.thickness + extraWave);
+        }
+        ctx.closePath();
+
+        // Aurora gradient - brighter in center, transparent at edges
+        const grad = ctx.createLinearGradient(0, this.yBase - this.amplitude, 0, this.yBase + this.thickness + this.amplitude);
+        grad.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0)`);
+        grad.addColorStop(0.3, `rgba(${r}, ${g}, ${b}, ${0.06 * fadeOut})`);
+        grad.addColorStop(0.5, `rgba(${r}, ${g}, ${b}, ${0.1 * fadeOut})`);
+        grad.addColorStop(0.7, `rgba(${r}, ${g}, ${b}, ${0.06 * fadeOut})`);
+        grad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+        ctx.fillStyle = grad;
+        ctx.fill();
     }
 }
 
-// Generate skyline buildings in layers
-function generateBuildings() {
-    const result = [];
-    // 3 layers: back, mid, front
-    for (let layer = 0; layer < 3; layer++) {
-        let x = -20;
-        while (x < canvas.width + 20) {
-            const width = Math.random() * 50 + 30 + (2 - layer) * 15;
-            const gap = Math.random() * 8 + 2;
-            result.push(new Building(x, width, layer));
-            x += width + gap;
+class ShootingStar {
+    constructor() {
+        this.reset();
+    }
+
+    reset() {
+        this.x = Math.random() * canvas.width * 1.5;
+        this.y = Math.random() * canvas.height * 0.4;
+        this.length = 60 + Math.random() * 100;
+        this.speed = 4 + Math.random() * 6;
+        this.angle = Math.PI * 0.75 + (Math.random() - 0.5) * 0.3;
+        this.opacity = 0;
+        this.fadeInDone = false;
+        this.life = 0;
+        this.maxLife = 80 + Math.random() * 120;
+        this.active = Math.random() > 0.97; // rarely active
+    }
+
+    update() {
+        if (!this.active) {
+            if (Math.random() > 0.998) this.active = true;
+            return;
         }
+
+        this.life++;
+        this.x += Math.cos(this.angle) * this.speed;
+        this.y += Math.sin(this.angle) * this.speed;
+
+        // Fade in then out
+        if (this.life < 15) {
+            this.opacity = this.life / 15;
+        } else if (this.life > this.maxLife - 20) {
+            this.opacity = (this.maxLife - this.life) / 20;
+        } else {
+            this.opacity = 1;
+        }
+
+        if (this.life > this.maxLife || this.x < -200 || this.y > canvas.height) {
+            this.reset();
+        }
+    }
+
+    draw(scrollProgress) {
+        let fadeOut;
+        if (scrollProgress < 0.4) {
+            fadeOut = 1;
+        } else if (scrollProgress > 0.6) {
+            fadeOut = 0;
+        } else {
+            fadeOut = 1 - ((scrollProgress - 0.4) / 0.2);
+        }
+        if (fadeOut <= 0 || !this.active || this.opacity <= 0) return;
+
+        const tailX = this.x - Math.cos(this.angle) * this.length;
+        const tailY = this.y - Math.sin(this.angle) * this.length;
+
+        const grad = ctx.createLinearGradient(this.x, this.y, tailX, tailY);
+        grad.addColorStop(0, `rgba(255, 255, 255, ${this.opacity * fadeOut * 0.8})`);
+        grad.addColorStop(0.3, `rgba(180, 220, 255, ${this.opacity * fadeOut * 0.4})`);
+        grad.addColorStop(1, `rgba(100, 180, 255, 0)`);
+
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(tailX, tailY);
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Bright head
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity * fadeOut * 0.9})`;
+        ctx.fill();
+    }
+}
+
+// Generate mountain layers
+function generateMountains() {
+    const result = [];
+    for (let layer = 0; layer < 3; layer++) {
+        result.push(new Mountain(layer));
     }
     return result;
 }
 
-function generatePlants() {
+function generateAurora() {
     const result = [];
-    for (let i = 0; i < 60; i++) {
-        result.push(new Plant());
+    const count = 5;
+    for (let i = 0; i < count; i++) {
+        result.push(new AuroraWave(i, count));
+    }
+    return result;
+}
+
+function generateShootingStars() {
+    const result = [];
+    for (let i = 0; i < 4; i++) {
+        result.push(new ShootingStar());
     }
     return result;
 }
@@ -541,8 +614,9 @@ class Star {
 // ==================== INITIALIZATION ====================
 const blackHole = new BlackHole();
 const mathEquations = Array.from({ length: 60 }, () => new MathEquation(blackHole, true));
-const buildings = generateBuildings();
-const plants = generatePlants();
+const mountains = generateMountains();
+const auroraWaves = generateAurora();
+const shootingStars = generateShootingStars();
 const dustParticles = Array.from({ length: 200 }, () => new DustParticle(blackHole));
 const stars = Array.from({ length: 150 }, () => new Star());
 
@@ -564,14 +638,16 @@ function animate() {
         transitionFactor = (scrollProgress - 0.4) / 0.2;
     }
 
-    // Blend background colors
-    const utopiaGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    // Blend background colors - night sky with subtle aurora tint
+    const nightSkyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
     const utopiaOpacity = 1 - transitionFactor;
 
     if (utopiaOpacity > 0) {
-        utopiaGradient.addColorStop(0, `rgba(100, 200, 255, ${0.15 * utopiaOpacity})`);
-        utopiaGradient.addColorStop(1, `rgba(150, 100, 200, ${0.1 * utopiaOpacity})`);
-        ctx.fillStyle = utopiaGradient;
+        nightSkyGradient.addColorStop(0, `rgba(5, 10, 30, ${0.4 * utopiaOpacity})`);
+        nightSkyGradient.addColorStop(0.3, `rgba(10, 20, 50, ${0.3 * utopiaOpacity})`);
+        nightSkyGradient.addColorStop(0.6, `rgba(15, 25, 55, ${0.25 * utopiaOpacity})`);
+        nightSkyGradient.addColorStop(1, `rgba(8, 12, 35, ${0.35 * utopiaOpacity})`);
+        ctx.fillStyle = nightSkyGradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
@@ -587,18 +663,27 @@ function animate() {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
-    // Draw futuristic cityscape (fades out during transition)
-    buildings.forEach(building => building.draw(scrollProgress));
-    plants.forEach(plant => plant.draw(scrollProgress));
+    // Draw aurora borealis (behind mountains)
+    auroraWaves.forEach(wave => wave.draw(scrollProgress));
 
-    // Ground horizon glow
+    // Draw mountain landscape (fades out during transition)
+    mountains.forEach(mountain => mountain.draw(scrollProgress));
+
+    // Update and draw shooting stars
+    shootingStars.forEach(star => {
+        star.update();
+        star.draw(scrollProgress);
+    });
+
+    // Mountain base fog/mist glow
     if (utopiaOpacity > 0) {
-        const groundGlow = ctx.createLinearGradient(0, canvas.height - 60, 0, canvas.height);
-        groundGlow.addColorStop(0, 'rgba(0, 0, 0, 0)');
-        groundGlow.addColorStop(0.5, `rgba(80, 200, 180, ${0.08 * utopiaOpacity})`);
-        groundGlow.addColorStop(1, `rgba(100, 180, 255, ${0.15 * utopiaOpacity})`);
-        ctx.fillStyle = groundGlow;
-        ctx.fillRect(0, canvas.height - 60, canvas.width, 60);
+        const mistGlow = ctx.createLinearGradient(0, canvas.height - 100, 0, canvas.height);
+        mistGlow.addColorStop(0, 'rgba(0, 0, 0, 0)');
+        mistGlow.addColorStop(0.4, `rgba(20, 40, 80, ${0.1 * utopiaOpacity})`);
+        mistGlow.addColorStop(0.7, `rgba(15, 30, 60, ${0.2 * utopiaOpacity})`);
+        mistGlow.addColorStop(1, `rgba(10, 15, 40, ${0.3 * utopiaOpacity})`);
+        ctx.fillStyle = mistGlow;
+        ctx.fillRect(0, canvas.height - 100, canvas.width, 100);
     }
 
     // Draw stars (fade in during transition)
