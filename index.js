@@ -646,10 +646,10 @@ function drawNewtonScene(scrollProgress) {
     ctx.fillStyle = sky;
     ctx.fillRect(0, 0, w, h);
 
-    // --- Sun (low on horizon) ---
-    const sunX = w * 0.25;
-    const sunY = h * 0.55;
-    const sunGlow = ctx.createRadialGradient(sunX, sunY, 20, sunX, sunY, 160);
+    // --- Sun (top-left area) ---
+    const sunX = w * 0.12;
+    const sunY = h * 0.18;
+    const sunGlow = ctx.createRadialGradient(sunX, sunY, 20, sunX, sunY, 200);
     sunGlow.addColorStop(0, 'rgba(255, 220, 120, 0.9)');
     sunGlow.addColorStop(0.3, 'rgba(255, 180, 80, 0.4)');
     sunGlow.addColorStop(0.7, 'rgba(255, 140, 60, 0.1)');
@@ -718,8 +718,8 @@ function drawNewtonScene(scrollProgress) {
     }
     ctx.stroke();
 
-    // --- Tree ---
-    const treeX = w * 0.6;
+    // --- Tree (far right) ---
+    const treeX = w * 0.82;
     const treeBaseY = h * 0.88;
     const trunkHeight = h * 0.35;
     const trunkTop = treeBaseY - trunkHeight;
@@ -744,9 +744,10 @@ function drawNewtonScene(scrollProgress) {
         ctx.stroke();
     }
 
-    // Branch extending left (where apple hangs)
+    // Branch extending left (where apple hangs) — directly above Newton
+    const newtonX = treeX - 30;
     const branchStartY = trunkTop + 30;
-    const branchEndX = treeX - 80;
+    const branchEndX = newtonX;
     const branchEndY = branchStartY + 15;
 
     ctx.strokeStyle = '#3d2817';
@@ -791,47 +792,101 @@ function drawNewtonScene(scrollProgress) {
         ctx.fill();
     });
 
-    // --- Newton silhouette (sitting under tree, leaning on trunk) ---
-    const newtonX = treeX - 25;
+    // --- Newton (sitting under tree, leaning on trunk) ---
     const newtonBaseY = treeBaseY;
     const headRadius = 14;
-    const headY = newtonBaseY - 55;
+    const headY = newtonBaseY - 58;
 
-    // Body (seated triangle/trapezoid)
+    // Coat / body (long period coat, wider)
+    ctx.fillStyle = '#2a1a12';
+    ctx.beginPath();
+    ctx.moveTo(newtonX - 22, newtonBaseY);
+    ctx.lineTo(newtonX + 28, newtonBaseY);
+    ctx.lineTo(newtonX + 12, newtonBaseY - 42);
+    ctx.lineTo(newtonX - 10, newtonBaseY - 42);
+    ctx.closePath();
+    ctx.fill();
+
+    // Coat collar / lapels
+    ctx.strokeStyle = '#3d2a1a';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(newtonX - 2, newtonBaseY - 42);
+    ctx.lineTo(newtonX - 6, newtonBaseY - 30);
+    ctx.moveTo(newtonX + 4, newtonBaseY - 42);
+    ctx.lineTo(newtonX + 8, newtonBaseY - 30);
+    ctx.stroke();
+
+    // Legs (extended forward, with shoes)
     ctx.fillStyle = '#1a1210';
     ctx.beginPath();
-    ctx.moveTo(newtonX - 20, newtonBaseY);        // left foot
-    ctx.lineTo(newtonX + 25, newtonBaseY);         // right foot
-    ctx.lineTo(newtonX + 10, newtonBaseY - 40);    // right shoulder
-    ctx.lineTo(newtonX - 8, newtonBaseY - 40);     // left shoulder
+    ctx.moveTo(newtonX - 16, newtonBaseY);
+    ctx.lineTo(newtonX - 40, newtonBaseY - 4);
+    ctx.lineTo(newtonX - 38, newtonBaseY + 4);
+    ctx.lineTo(newtonX - 13, newtonBaseY + 4);
     ctx.closePath();
+    ctx.fill();
+    // Shoe
+    ctx.fillStyle = '#100c08';
+    ctx.beginPath();
+    ctx.ellipse(newtonX - 40, newtonBaseY, 6, 5, 0, 0, Math.PI * 2);
     ctx.fill();
 
     // Head
     ctx.beginPath();
     ctx.arc(newtonX, headY, headRadius, 0, Math.PI * 2);
-    ctx.fillStyle = '#1a1210';
+    ctx.fillStyle = '#d4a574';
     ctx.fill();
 
-    // Legs (extended forward)
-    ctx.fillStyle = '#1a1210';
+    // Long curly wig (Newton's signature look)
+    ctx.fillStyle = '#4a4040';
+    // Left side curls — flowing down past shoulders
     ctx.beginPath();
-    ctx.moveTo(newtonX - 15, newtonBaseY);
-    ctx.lineTo(newtonX - 35, newtonBaseY - 5);
-    ctx.lineTo(newtonX - 33, newtonBaseY + 4);
-    ctx.lineTo(newtonX - 12, newtonBaseY + 4);
+    ctx.moveTo(newtonX - headRadius, headY - 4);
+    ctx.quadraticCurveTo(newtonX - headRadius - 10, headY + 8, newtonX - headRadius - 6, headY + 20);
+    ctx.quadraticCurveTo(newtonX - headRadius - 12, headY + 30, newtonX - headRadius - 4, headY + 40);
+    ctx.quadraticCurveTo(newtonX - headRadius + 2, headY + 38, newtonX - headRadius + 4, headY + 28);
+    ctx.quadraticCurveTo(newtonX - headRadius - 2, headY + 18, newtonX - headRadius + 2, headY + 6);
+    ctx.closePath();
+    ctx.fill();
+    // Right side curls
+    ctx.beginPath();
+    ctx.moveTo(newtonX + headRadius, headY - 4);
+    ctx.quadraticCurveTo(newtonX + headRadius + 10, headY + 8, newtonX + headRadius + 6, headY + 20);
+    ctx.quadraticCurveTo(newtonX + headRadius + 12, headY + 30, newtonX + headRadius + 4, headY + 40);
+    ctx.quadraticCurveTo(newtonX + headRadius - 2, headY + 38, newtonX + headRadius - 4, headY + 28);
+    ctx.quadraticCurveTo(newtonX + headRadius + 2, headY + 18, newtonX + headRadius - 2, headY + 6);
+    ctx.closePath();
+    ctx.fill();
+    // Top of wig
+    ctx.beginPath();
+    ctx.ellipse(newtonX, headY - headRadius + 2, headRadius + 4, 8, 0, Math.PI, Math.PI * 2);
+    ctx.fill();
+    // Middle curls (center part visible)
+    ctx.beginPath();
+    ctx.moveTo(newtonX, headY - headRadius + 4);
+    ctx.lineTo(newtonX - 1, headY - headRadius - 2);
+    ctx.lineTo(newtonX + 1, headY - headRadius - 2);
     ctx.closePath();
     ctx.fill();
 
-    // Hat brim (period-appropriate)
-    ctx.fillStyle = '#12100e';
+    // Facial features (minimal)
+    ctx.fillStyle = '#2a1a10';
+    // Eyes
     ctx.beginPath();
-    ctx.ellipse(newtonX, headY - headRadius + 2, headRadius + 5, 4, 0, 0, Math.PI * 2);
+    ctx.arc(newtonX - 4, headY - 2, 1.5, 0, Math.PI * 2);
+    ctx.arc(newtonX + 4, headY - 2, 1.5, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillRect(newtonX - 7, headY - headRadius - 10, 14, 12);
+    // Nose
+    ctx.strokeStyle = '#8a6a4a';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(newtonX, headY);
+    ctx.lineTo(newtonX - 1, headY + 3);
+    ctx.stroke();
 
-    // --- Apple ---
-    const appleStartX = branchEndX + 10;
+    // --- Apple (falls straight down) ---
+    const appleStartX = newtonX;
     const appleStartY = branchEndY + 8;
     const appleTargetY = headY - headRadius - 6;
 
@@ -839,7 +894,7 @@ function drawNewtonScene(scrollProgress) {
     const fallProgress = Math.min(1, scrollProgress / 0.92);
     // Ease-in (gravity acceleration)
     const easedFall = fallProgress * fallProgress;
-    const appleX = appleStartX + Math.sin(fallProgress * Math.PI * 3) * 4 * (1 - fallProgress);
+    const appleX = appleStartX;
     const appleY = appleStartY + (appleTargetY - appleStartY) * easedFall;
     const appleRadius = 8;
 
@@ -893,16 +948,16 @@ function drawNewtonScene(scrollProgress) {
         }
 
         // Thought bubble with F = mg
-        const bubbleX = newtonX + 50;
-        const bubbleY = headY - 50;
+        const bubbleX = newtonX - 55;
+        const bubbleY = headY - 45;
 
-        // Bubble dots (trail)
+        // Bubble dots (trail from head to bubble)
         ctx.fillStyle = `rgba(255, 255, 255, ${0.6 * impactIntensity})`;
         ctx.beginPath();
-        ctx.arc(newtonX + 15, headY - 22, 3, 0, Math.PI * 2);
+        ctx.arc(newtonX - 18, headY - 20, 3, 0, Math.PI * 2);
         ctx.fill();
         ctx.beginPath();
-        ctx.arc(newtonX + 28, headY - 32, 5, 0, Math.PI * 2);
+        ctx.arc(newtonX - 32, headY - 30, 5, 0, Math.PI * 2);
         ctx.fill();
 
         // Main bubble
