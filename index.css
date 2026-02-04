@@ -185,6 +185,40 @@ a:hover {
     color: #64b5f6;
 }
 
+/* Background toggle button */
+#bg-toggle {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid #333;
+    background: rgba(20, 20, 20, 0.7);
+    backdrop-filter: blur(8px);
+    color: #e0e0e0;
+    font-size: 1.2rem;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.3s, background 0.3s, transform 0.2s;
+    padding: 0;
+    line-height: 1;
+}
+
+#bg-toggle:hover {
+    border-color: #64b5f6;
+    background: rgba(30, 30, 40, 0.85);
+    transform: scale(1.08);
+}
+
+#bg-toggle.active {
+    border-color: #a5d6a7;
+    background: rgba(40, 60, 40, 0.7);
+}
+
 /* Animation base states */
 .fade-in {
     opacity: 0;

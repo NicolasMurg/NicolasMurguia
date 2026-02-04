@@ -620,11 +620,329 @@ const shootingStars = generateShootingStars();
 const dustParticles = Array.from({ length: 200 }, () => new DustParticle(blackHole));
 const stars = Array.from({ length: 150 }, () => new Star());
 
+// ==================== NEWTON MODE ====================
+let newtonMode = false;
+const bgToggle = document.getElementById('bg-toggle');
+
+// Pre-generate cloud positions so they don't jitter
+const newtonClouds = [
+    { x: 0.15, y: 0.12, w: 120, h: 40, speed: 0.00003 },
+    { x: 0.55, y: 0.08, w: 90, h: 30, speed: 0.00005 },
+    { x: 0.8, y: 0.18, w: 100, h: 35, speed: 0.00002 },
+];
+
+function drawNewtonScene(scrollProgress) {
+    const w = canvas.width;
+    const h = canvas.height;
+
+    // --- Sky gradient (warm sunset) ---
+    const sky = ctx.createLinearGradient(0, 0, 0, h);
+    sky.addColorStop(0, '#1a1a3e');
+    sky.addColorStop(0.2, '#2d2b5e');
+    sky.addColorStop(0.45, '#c85a3a');
+    sky.addColorStop(0.6, '#e8a55a');
+    sky.addColorStop(0.75, '#d4c07a');
+    sky.addColorStop(1, '#3a6b35');
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, w, h);
+
+    // --- Sun (low on horizon) ---
+    const sunX = w * 0.25;
+    const sunY = h * 0.55;
+    const sunGlow = ctx.createRadialGradient(sunX, sunY, 20, sunX, sunY, 160);
+    sunGlow.addColorStop(0, 'rgba(255, 220, 120, 0.9)');
+    sunGlow.addColorStop(0.3, 'rgba(255, 180, 80, 0.4)');
+    sunGlow.addColorStop(0.7, 'rgba(255, 140, 60, 0.1)');
+    sunGlow.addColorStop(1, 'rgba(255, 100, 40, 0)');
+    ctx.fillStyle = sunGlow;
+    ctx.fillRect(0, 0, w, h);
+    // Sun disc
+    ctx.beginPath();
+    ctx.arc(sunX, sunY, 35, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 230, 150, 0.85)';
+    ctx.fill();
+
+    // --- Clouds ---
+    const time = Date.now();
+    newtonClouds.forEach(cloud => {
+        const cx = (cloud.x * w + time * cloud.speed * w) % (w + 200) - 100;
+        const cy = cloud.y * h;
+        ctx.fillStyle = 'rgba(255, 220, 180, 0.2)';
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, cloud.w, cloud.h, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(cx - cloud.w * 0.35, cy + 5, cloud.w * 0.6, cloud.h * 0.7, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(cx + cloud.w * 0.3, cy + 3, cloud.w * 0.5, cloud.h * 0.8, 0, 0, Math.PI * 2);
+        ctx.fill();
+    });
+
+    // --- Rolling hills (background) ---
+    const hillBaseY = h * 0.72;
+
+    // Far hill
+    ctx.beginPath();
+    ctx.moveTo(0, h);
+    ctx.quadraticCurveTo(w * 0.25, hillBaseY - 60, w * 0.5, hillBaseY - 20);
+    ctx.quadraticCurveTo(w * 0.75, hillBaseY + 20, w, hillBaseY - 40);
+    ctx.lineTo(w, h);
+    ctx.closePath();
+    ctx.fillStyle = '#2d5a27';
+    ctx.fill();
+
+    // Near hill
+    ctx.beginPath();
+    ctx.moveTo(0, h);
+    ctx.quadraticCurveTo(w * 0.3, hillBaseY + 10, w * 0.55, hillBaseY + 40);
+    ctx.quadraticCurveTo(w * 0.8, hillBaseY + 20, w, hillBaseY + 50);
+    ctx.lineTo(w, h);
+    ctx.closePath();
+    ctx.fillStyle = '#1f4a1a';
+    ctx.fill();
+
+    // --- Ground ---
+    ctx.fillStyle = '#173613';
+    ctx.fillRect(0, h * 0.88, w, h * 0.12);
+
+    // Grass line
+    ctx.strokeStyle = '#2a6b22';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let gx = 0; gx < w; gx += 12) {
+        ctx.moveTo(gx, h * 0.88);
+        ctx.lineTo(gx + 3, h * 0.88 - 6 - Math.random() * 4);
+        ctx.moveTo(gx + 6, h * 0.88);
+        ctx.lineTo(gx + 4, h * 0.88 - 5 - Math.random() * 3);
+    }
+    ctx.stroke();
+
+    // --- Tree ---
+    const treeX = w * 0.6;
+    const treeBaseY = h * 0.88;
+    const trunkHeight = h * 0.35;
+    const trunkTop = treeBaseY - trunkHeight;
+
+    // Trunk
+    ctx.fillStyle = '#3d2817';
+    ctx.beginPath();
+    ctx.moveTo(treeX - 12, treeBaseY);
+    ctx.quadraticCurveTo(treeX - 14, treeBaseY - trunkHeight * 0.5, treeX - 8, trunkTop);
+    ctx.lineTo(treeX + 8, trunkTop);
+    ctx.quadraticCurveTo(treeX + 14, treeBaseY - trunkHeight * 0.5, treeX + 12, treeBaseY);
+    ctx.closePath();
+    ctx.fill();
+
+    // Trunk bark texture
+    ctx.strokeStyle = 'rgba(30, 18, 8, 0.4)';
+    ctx.lineWidth = 1;
+    for (let ty = trunkTop + 20; ty < treeBaseY; ty += 18) {
+        ctx.beginPath();
+        ctx.moveTo(treeX - 8, ty);
+        ctx.quadraticCurveTo(treeX, ty - 4, treeX + 8, ty);
+        ctx.stroke();
+    }
+
+    // Branch extending left (where apple hangs)
+    const branchStartY = trunkTop + 30;
+    const branchEndX = treeX - 80;
+    const branchEndY = branchStartY + 15;
+
+    ctx.strokeStyle = '#3d2817';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(treeX - 5, branchStartY);
+    ctx.quadraticCurveTo(treeX - 40, branchStartY - 8, branchEndX, branchEndY);
+    ctx.stroke();
+
+    // Small branch right side
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(treeX + 5, trunkTop + 40);
+    ctx.quadraticCurveTo(treeX + 50, trunkTop + 25, treeX + 75, trunkTop + 35);
+    ctx.stroke();
+
+    // Canopy (overlapping circles)
+    const canopyColors = ['#2a7a25', '#247020', '#30882c', '#1f6b1a', '#359330'];
+    const canopyCircles = [
+        { dx: 0, dy: -25, r: 55 },
+        { dx: -40, dy: -10, r: 45 },
+        { dx: 40, dy: -10, r: 45 },
+        { dx: -25, dy: -45, r: 40 },
+        { dx: 25, dy: -45, r: 40 },
+        { dx: 0, dy: -55, r: 35 },
+        { dx: -55, dy: 5, r: 35 },
+        { dx: 55, dy: 5, r: 35 },
+    ];
+
+    canopyCircles.forEach((c, i) => {
+        ctx.beginPath();
+        ctx.arc(treeX + c.dx, trunkTop + c.dy, c.r, 0, Math.PI * 2);
+        ctx.fillStyle = canopyColors[i % canopyColors.length];
+        ctx.fill();
+    });
+
+    // Leaf detail on canopy edges
+    ctx.fillStyle = 'rgba(50, 160, 45, 0.3)';
+    canopyCircles.forEach(c => {
+        ctx.beginPath();
+        ctx.arc(treeX + c.dx, trunkTop + c.dy, c.r + 3, 0, Math.PI * 2);
+        ctx.fill();
+    });
+
+    // --- Newton silhouette (sitting under tree, leaning on trunk) ---
+    const newtonX = treeX - 25;
+    const newtonBaseY = treeBaseY;
+    const headRadius = 14;
+    const headY = newtonBaseY - 55;
+
+    // Body (seated triangle/trapezoid)
+    ctx.fillStyle = '#1a1210';
+    ctx.beginPath();
+    ctx.moveTo(newtonX - 20, newtonBaseY);        // left foot
+    ctx.lineTo(newtonX + 25, newtonBaseY);         // right foot
+    ctx.lineTo(newtonX + 10, newtonBaseY - 40);    // right shoulder
+    ctx.lineTo(newtonX - 8, newtonBaseY - 40);     // left shoulder
+    ctx.closePath();
+    ctx.fill();
+
+    // Head
+    ctx.beginPath();
+    ctx.arc(newtonX, headY, headRadius, 0, Math.PI * 2);
+    ctx.fillStyle = '#1a1210';
+    ctx.fill();
+
+    // Legs (extended forward)
+    ctx.fillStyle = '#1a1210';
+    ctx.beginPath();
+    ctx.moveTo(newtonX - 15, newtonBaseY);
+    ctx.lineTo(newtonX - 35, newtonBaseY - 5);
+    ctx.lineTo(newtonX - 33, newtonBaseY + 4);
+    ctx.lineTo(newtonX - 12, newtonBaseY + 4);
+    ctx.closePath();
+    ctx.fill();
+
+    // Hat brim (period-appropriate)
+    ctx.fillStyle = '#12100e';
+    ctx.beginPath();
+    ctx.ellipse(newtonX, headY - headRadius + 2, headRadius + 5, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillRect(newtonX - 7, headY - headRadius - 10, 14, 12);
+
+    // --- Apple ---
+    const appleStartX = branchEndX + 10;
+    const appleStartY = branchEndY + 8;
+    const appleTargetY = headY - headRadius - 6;
+
+    // Apple falls based on scroll progress
+    const fallProgress = Math.min(1, scrollProgress / 0.92);
+    // Ease-in (gravity acceleration)
+    const easedFall = fallProgress * fallProgress;
+    const appleX = appleStartX + Math.sin(fallProgress * Math.PI * 3) * 4 * (1 - fallProgress);
+    const appleY = appleStartY + (appleTargetY - appleStartY) * easedFall;
+    const appleRadius = 8;
+
+    // Apple body
+    ctx.beginPath();
+    ctx.arc(appleX, appleY, appleRadius, 0, Math.PI * 2);
+    const appleGrad = ctx.createRadialGradient(appleX - 2, appleY - 2, 1, appleX, appleY, appleRadius);
+    appleGrad.addColorStop(0, '#e83030');
+    appleGrad.addColorStop(0.7, '#c42020');
+    appleGrad.addColorStop(1, '#8b1515');
+    ctx.fillStyle = appleGrad;
+    ctx.fill();
+
+    // Apple highlight
+    ctx.beginPath();
+    ctx.arc(appleX - 2, appleY - 3, 3, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+    ctx.fill();
+
+    // Stem
+    ctx.strokeStyle = '#3d2817';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(appleX, appleY - appleRadius);
+    ctx.lineTo(appleX + 1, appleY - appleRadius - 6);
+    ctx.stroke();
+
+    // Leaf on stem
+    ctx.fillStyle = '#3a8a30';
+    ctx.beginPath();
+    ctx.ellipse(appleX + 4, appleY - appleRadius - 4, 5, 2.5, 0.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // --- Impact effect (when apple reaches Newton) ---
+    if (fallProgress >= 0.95) {
+        const impactIntensity = Math.min(1, (fallProgress - 0.95) / 0.05);
+        const impactX = appleX;
+        const impactY = appleTargetY;
+
+        // Starburst lines
+        ctx.strokeStyle = `rgba(255, 230, 100, ${0.7 * impactIntensity})`;
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 8; i++) {
+            const angle = (i / 8) * Math.PI * 2 - Math.PI / 2;
+            const innerR = 12;
+            const outerR = 22 + impactIntensity * 10;
+            ctx.beginPath();
+            ctx.moveTo(impactX + Math.cos(angle) * innerR, impactY + Math.sin(angle) * innerR);
+            ctx.lineTo(impactX + Math.cos(angle) * outerR, impactY + Math.sin(angle) * outerR);
+            ctx.stroke();
+        }
+
+        // Thought bubble with F = mg
+        const bubbleX = newtonX + 50;
+        const bubbleY = headY - 50;
+
+        // Bubble dots (trail)
+        ctx.fillStyle = `rgba(255, 255, 255, ${0.6 * impactIntensity})`;
+        ctx.beginPath();
+        ctx.arc(newtonX + 15, headY - 22, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(newtonX + 28, headY - 32, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Main bubble
+        ctx.beginPath();
+        ctx.ellipse(bubbleX, bubbleY, 38, 22, 0, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${0.75 * impactIntensity})`;
+        ctx.fill();
+        ctx.strokeStyle = `rgba(200, 200, 200, ${0.5 * impactIntensity})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // "F = mg" text
+        ctx.font = 'italic 16px "Courier New", monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = `rgba(30, 30, 30, ${impactIntensity})`;
+        ctx.fillText('F = mg', bubbleX, bubbleY);
+    }
+}
+
+bgToggle.addEventListener('click', () => {
+    newtonMode = !newtonMode;
+    bgToggle.classList.toggle('active', newtonMode);
+    canvas.style.background = newtonMode
+        ? 'radial-gradient(ellipse at bottom, #2d1f10 0%, #1a1a2e 100%)'
+        : 'radial-gradient(ellipse at top, #0c1428 0%, #060a14 50%, #0a0a0a 100%)';
+});
+
 // ==================== ANIMATION LOOP ====================
 function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const scrollProgress = Math.min(1, window.scrollY / (document.body.scrollHeight - window.innerHeight));
+
+    // Newton mode: draw apple scene and skip everything else
+    if (newtonMode) {
+        drawNewtonScene(scrollProgress);
+        requestAnimationFrame(animate);
+        return;
+    }
 
     // Smooth transition between utopia and space
     // Transition window: 0.4 to 0.6 (centered at 0.5)
