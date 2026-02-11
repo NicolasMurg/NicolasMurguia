@@ -1,0 +1,11 @@
+Hi, I'm Nicolas, and I am an undergraduate Physics and 
+Data Science student at the University of Florida. 
+I enjoy solving problems by using mathematics to 
+make inferences off large datasets.
+I enjoy studying artificial intelligence functions, 
+ population-level patterns, physics, and human behavior.
+I have contributed to projects that focus on
+accessibility, data collection, and prediction. 
+When I'm not developing my skills, I do weightlifting, 
+go out for runs, go on trails, connect with friends, 
+and read scientific literature.

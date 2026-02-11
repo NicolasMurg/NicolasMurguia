@@ -6,11 +6,47 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #0a0a0a;    
+    background: #0a0a0a;
     color: #e0e0e0;
     line-height: 1.6;
     position: relative;
     overflow-x: hidden;
+}
+
+/* Fixed Navigation Bar */
+.site-nav {
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(10, 10, 10, 0.5);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    z-index: 100;
+}
+
+.nav-link {
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #999;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.nav-link:hover {
+    color: #fff;
+    background: rgba(100, 181, 246, 0.1);
+}
+
+.nav-link.active {
+    color: #64b5f6;
+    background: rgba(100, 181, 246, 0.15);
 }
 
 /* Canvas background layer */
@@ -36,14 +72,46 @@ a:hover {
 
 /* Hero Section */
 .hero {
-    min-height: 100vh;
+    min-height: auto;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
     background: transparent;
-    padding: 2rem;
+    padding: 5rem 2rem 2rem;
     position: relative;
+    scroll-margin-top: 3rem;
+}
+
+/* About Row */
+.about-row {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+    text-align: left;
+}
+
+/* Headshot */
+.headshot {
+    width: 140px;
+    height: 140px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 2px solid #333;
+    flex-shrink: 0;
+}
+
+/* About Me Text */
+.about-text {
+    color: #bbb;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.hero-content {
+    max-width: 700px;
 }
 
 .hero-content h1 {
@@ -91,6 +159,7 @@ a:hover {
     margin: 0 auto;
     padding: 5rem 2rem;
     position: relative;
+    scroll-margin-top: 3rem;
 }
 
 .section-title {
@@ -269,5 +338,20 @@ a:hover {
 
     .section {
         padding: 3rem 1.2rem;
+    }
+
+    .about-row {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .site-nav {
+        gap: 0.1rem;
+        padding: 0.5rem 0.5rem;
+    }
+
+    .nav-link {
+        font-size: 0.7rem;
+        padding: 0.35rem 0.6rem;
     }
 }

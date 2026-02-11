@@ -1104,3 +1104,30 @@ const observer = new IntersectionObserver((entries) => {
 document.querySelectorAll('.fade-in, .slide-in').forEach((el) => {
     observer.observe(el);
 });
+
+// ==================== NAV SCROLL SPY ====================
+const navLinks = document.querySelectorAll('.nav-link');
+const navSections = [];
+
+navLinks.forEach(link => {
+    const id = link.getAttribute('href').replace('#', '');
+    const section = document.getElementById(id);
+    if (section) navSections.push({ link, section });
+});
+
+function updateActiveNav() {
+    const scrollY = window.scrollY + 80;
+
+    let current = navSections[0];
+    for (const entry of navSections) {
+        if (entry.section.offsetTop <= scrollY) {
+            current = entry;
+        }
+    }
+
+    navLinks.forEach(link => link.classList.remove('active'));
+    if (current) current.link.classList.add('active');
+}
+
+window.addEventListener('scroll', updateActiveNav);
+updateActiveNav();

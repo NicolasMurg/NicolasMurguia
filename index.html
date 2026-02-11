@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="scroll-behavior: smooth;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,12 +7,23 @@
     <link rel="stylesheet" href="index.css">
 </head>
 <body>
+    <!-- Fixed Navigation Bar -->
+    <nav class="site-nav" id="site-nav">
+        <a href="#top" class="nav-link active">About</a>
+        <a href="#education" class="nav-link">Education</a>
+        <a href="#experience" class="nav-link">Experience</a>
+        <a href="#certifications" class="nav-link">Certifications</a>
+        <a href="#projects" class="nav-link">Projects</a>
+        <a href="#extracurriculars" class="nav-link">Activities</a>
+        <a href="#honors" class="nav-link">Honors</a>
+    </nav>
+
     <!-- Animated Background Canvas -->
     <canvas id="background-canvas"></canvas>
     <button id="bg-toggle" title="Toggle Newton mode">&#127822;</button>
 
-    <!-- Hero Section -->
-    <header class="hero">
+    <!-- Hero + About Me Section -->
+    <header class="hero" id="top">
         <div class="hero-content fade-in">
             <h1>Nicolas Murguia</h1>
             <p class="subtitle">Data Science & Physics</p>
@@ -21,6 +32,10 @@
                 <a href="https://www.linkedin.com/in/nicolasmurguia/" target="_blank">LinkedIn</a>
                 <a href="https://github.com/NicolasMurg" target="_blank">GitHub</a>
                 <a href="https://devpost.com/nicolasmuf?ref_content=user-portfolio&ref_feature=portfolio&ref_medium=global-nav" target="_blank">Devpost</a>
+            </div>
+            <div class="about-row">
+                <img src="Images/HeadShotNicolasMurguia.jpeg" alt="Nicolas Murguia" class="headshot">
+                <p class="about-text">Hi, I'm Nicolas, and I am an undergraduate Physics and Data Science student at the University of Florida. I enjoy solving problems by using mathematics to make inferences off large datasets. I enjoy studying artificial intelligence functions, population-level patterns, physics, and human behavior. I have contributed to projects that focus on accessibility, data collection, and prediction. When I'm not developing my skills, I do weightlifting, go out for runs, go on trails, connect with friends, and read scientific literature.</p>
             </div>
         </div>
     </header>
