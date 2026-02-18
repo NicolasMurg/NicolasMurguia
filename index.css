@@ -20,6 +20,7 @@ body {
     left: 50%;
     transform: translateX(-50%);
     display: flex;
+    align-items: center;
     gap: 0.25rem;
     padding: 0.5rem 0.75rem;
     background: rgba(10, 10, 10, 0.5);
@@ -303,36 +304,60 @@ a:hover {
 
 /* Background toggle button */
 #bg-toggle {
-    position: fixed;
-    bottom: 1.5rem;
-    right: 1.5rem;
-    width: 44px;
-    height: 44px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    border: 1px solid #333;
-    background: rgba(20, 20, 20, 0.7);
-    backdrop-filter: blur(8px);
-    color: #e0e0e0;
-    font-size: 1.2rem;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.05);
     cursor: pointer;
-    z-index: 10;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: border-color 0.3s, background 0.3s, transform 0.2s;
+    transition: border-color 0.3s, background 0.3s, transform 0.2s, box-shadow 0.3s;
     padding: 0;
-    line-height: 1;
+    margin-left: 0.35rem;
+    position: relative;
 }
 
 #bg-toggle:hover {
-    border-color: #64b5f6;
+    border-color: #ff8c00;
     background: rgba(30, 30, 40, 0.85);
     transform: scale(1.08);
+    box-shadow: 0 0 8px rgba(255, 140, 0, 0.4);
 }
 
 #bg-toggle.active {
     border-color: #a5d6a7;
     background: rgba(40, 60, 40, 0.7);
+}
+
+/* Mini black hole graphic */
+.bh-core {
+    display: block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #000;
+    box-shadow:
+        0 0 0 2px #ff8c00,
+        0 0 4px 2px rgba(255, 140, 0, 0.5),
+        0 0 8px 3px rgba(255, 80, 0, 0.3),
+        0 0 12px 4px rgba(200, 40, 100, 0.15);
+}
+
+/* Apple icon (hidden by default, shown in black hole mode) */
+.bh-apple {
+    display: none;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+#bg-toggle.active .bh-core {
+    display: none;
+}
+
+#bg-toggle.active .bh-apple {
+    display: block;
 }
 
 /* Animation base states */

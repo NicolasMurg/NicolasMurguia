@@ -4,7 +4,7 @@ Nicolas Murguia
 |NicolasMUF@gmail.com|https://www.linkedin.com/in/nicolasmurguia/ 
 
 Education 
-University of Florida, Gainesville, FL 32611----------------------< GPA: 4.00 >-----------------------2025-present 
+University of Florida, Gainesville, FL 32611----------------------< GPA: 3.81 >-----------------------2025-present 
 	Relevant Credits: MAC2311, MAC2312, MAC2313 (Calculus 1-3) 
 			  PHY2053/L, PHY2049/L, PHY2048/L (Physics Alge-b, E&M Calc-b, Mechanics Calc-b) 
 			  COP2273, COP1334C(Python, C++) 
