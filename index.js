@@ -1007,16 +1007,16 @@ function drawNewtonScene(scrollProgress) {
         }
 
         // Thought bubble with F = mg
-        const bubbleX = newtonX - 55;
+        const bubbleX = newtonX + 55;
         const bubbleY = headY - 45;
 
         // Bubble dots (trail from head to bubble)
         ctx.fillStyle = `rgba(255, 255, 255, ${0.6 * impactIntensity})`;
         ctx.beginPath();
-        ctx.arc(newtonX - 18, headY - 20, 3, 0, Math.PI * 2);
+        ctx.arc(newtonX + 18, headY - 20, 3, 0, Math.PI * 2);
         ctx.fill();
         ctx.beginPath();
-        ctx.arc(newtonX - 32, headY - 30, 5, 0, Math.PI * 2);
+        ctx.arc(newtonX + 32, headY - 30, 5, 0, Math.PI * 2);
         ctx.fill();
 
         // Main bubble
