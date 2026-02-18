@@ -1045,6 +1045,16 @@ bgToggle.addEventListener('click', () => {
         : 'radial-gradient(ellipse at top, #0c1428 0%, #060a14 50%, #0a0a0a 100%)';
 });
 
+// Position the toggle button to the right of the nav bar
+function positionToggle() {
+    const nav = document.getElementById('site-nav');
+    const rect = nav.getBoundingClientRect();
+    bgToggle.style.left = (rect.right + 8) + 'px';
+    bgToggle.style.top = (rect.top + (rect.height - bgToggle.offsetHeight) / 2) + 'px';
+}
+positionToggle();
+window.addEventListener('resize', positionToggle);
+
 // ==================== ANIMATION LOOP ====================
 function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);

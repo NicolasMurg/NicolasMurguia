@@ -302,21 +302,23 @@ a:hover {
     color: #64b5f6;
 }
 
-/* Background toggle button */
+/* Background toggle button — sits just right of the centered nav */
 #bg-toggle {
-    width: 32px;
-    height: 32px;
+    position: fixed;
+    top: 1rem;
+    z-index: 100;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     border: 1px solid rgba(255, 255, 255, 0.15);
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(10, 10, 10, 0.5);
+    backdrop-filter: blur(12px);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: border-color 0.3s, background 0.3s, transform 0.2s, box-shadow 0.3s;
     padding: 0;
-    margin-left: 0.35rem;
-    position: relative;
 }
 
 #bg-toggle:hover {
