@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en" style="scroll-behavior: smooth;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nicolas Murguia</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <!-- Fixed Navigation Bar -->
+    <nav class="site-nav" id="site-nav">
+        <a href="#top" class="nav-link active">About</a>
+        <a href="#education" class="nav-link">Education</a>
+        <a href="#experience" class="nav-link">Experience</a>
+        <a href="#projects" class="nav-link">Projects</a>
+        <a href="#extracurriculars" class="nav-link">Leadership</a>
+    </nav>
+
+    <!-- Animated Background Canvas -->
+    <canvas id="background-canvas"></canvas>
+    <button id="bg-toggle" title="Toggle Black Hole mode">&#127754;</button>
+
+    <!-- Hero + About Me Section -->
+    <header class="hero" id="top">
+        <div class="hero-content fade-in">
+            <h1>Nicolas Murguia</h1>
+            <p class="subtitle">Data Science & Physics</p>
+            <div class="contact-links">
+                <a href="mailto:NicolasMUF@gmail.com">NicolasMUF@gmail.com</a>
+                <a href="https://www.linkedin.com/in/nicolasmurguia/" target="_blank">LinkedIn</a>
+                <a href="https://github.com/NicolasMurg" target="_blank">GitHub</a>
+                <a href="https://devpost.com/nicolasmuf?ref_content=user-portfolio&ref_feature=portfolio&ref_medium=global-nav" target="_blank">Devpost</a>
+            </div>
+            <div class="about-row">
+                <img src="Images/HeadShotNicolasMurguia.jpeg" alt="Nicolas Murguia" class="headshot">
+                <p class="about-text">Hi, I'm Nicolas, and I am an undergraduate Physics and Data Science student at the University of Florida. I enjoy solving problems by using mathematics to make inferences off large datasets. I enjoy studying artificial intelligence functions, population-level patterns, physics, and human behavior. I have contributed to projects that focus on accessibility, data collection, and prediction. When I'm not developing my skills, I do weightlifting, go out for runs, go on trails, connect with friends, and read scientific literature.</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Education Section -->
+    <section class="section" id="education">
+        <h2 class="section-title slide-in">Education</h2>
+        <div class="card slide-in">
+            <div class="card-header">
+                <h3>University of Florida</h3>
+                <span class="badge">GPA: 4.00</span>
+                <span class="date">2025 &ndash; Present</span>
+            </div>
+            <p class="card-sub">Data Science / Physics (Double Major) &mdash; Gainesville, FL</p>
+            <div class="card-details">
+                <p><strong>Relevant Coursework:</strong> Calculus 1-3, Physics (Algebra-based, E&M Calc-based, Mechanics Calc-based), Python, C++</p>
+                <p><strong>Organizations:</strong> Data Science and Informatics Club</p>
+            </div>
+        </div>
+        <div class="card slide-in">
+            <div class="card-header">
+                <h3>Marjory Stoneman Douglas High School</h3>
+                <span class="badge">Top 7%</span>
+                <span class="date">2021 &ndash; 2025</span>
+            </div>
+            <p class="card-sub">Parkland, FL</p>
+        </div>
+    </section>
+
+    <!-- Experience Section -->
+    <section class="section" id="experience">
+        <h2 class="section-title slide-in">Experience</h2>
+        <div class="card slide-in">
+            <div class="card-header">
+                <h3>Publix Inc</h3>
+                <span class="badge">700+ Hours</span>
+                <span class="date">2023 &ndash; 2025</span>
+            </div>
+            <p class="card-sub">Coral Springs, FL</p>
+            <p>Team building, customer service, managing high-volume requests with accuracy and professionalism.</p>
+        </div>
+        <div class="card slide-in">
+            <div class="card-header">
+                <h3>Ursula's Dog Walking</h3>
+                <span class="badge">75+ Hours</span>
+                <span class="date">2024 &ndash; 2025</span>
+            </div>
+            <p>Maintained positive relationships with clients, organized schedules, balanced workloads with other walkers.</p>
+        </div>
+
+        <h3 class="subsection-title slide-in">Certifications</h3>
+        <div class="tags-container slide-in">
+            <span class="tag">NVIDIA Getting Started with Deep Learning</span>
+            <span class="tag">Digital Video Premiere Pro</span>
+            <span class="tag">Visual Design Adobe Photoshop (via Certiport)</span>
+        </div>
+
+        <h3 class="subsection-title slide-in">Honors & Awards</h3>
+        <div class="tags-container slide-in">
+            <span class="tag">National Honors Society (2023&ndash;2025)</span>
+            <span class="tag">AP Scholar With Distinction (2025)</span>
+            <span class="tag">Math Honors Society MAO (2024&ndash;2025)</span>
+            <span class="tag">AP Scholar With Distinction (2024)</span>
+            <span class="tag">College Board National Hispanic Award (2024)</span>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section class="section" id="projects">
+        <h2 class="section-title slide-in">Projects</h2>
+
+        <h3 class="subsection-title slide-in">Personal Projects</h3>
+        <div class="projects-grid">
+            <div class="card slide-in">
+                <img src="Images/BlackjackAlgorithm.png" alt="Blackjack Strategy Optimization Algorithm" class="card-image">
+                <div class="card-header">
+                    <h3>Blackjack Strategy Optimization Algorithm</h3>
+                    <span class="badge">Python</span>
+                    <span class="date">2025</span>
+                </div>
+                <p>Self-correcting algorithm that iteratively optimizes three parameters affecting the slope of the bot's bankroll, utilizing the average slope of 25,000 blackjack sessions (each 1,000 hands) to determine whether to retain or remove parameter changes.</p>
+            </div>
+            <div class="card slide-in">
+                <img src="Images/StockGradientAlgorithmImageC.png" alt="StockML Gradient Optimized News Model" class="card-image">
+                <div class="card-header">
+                    <h3>Stock Movement Predictor Utilizing Gradient Descent</h3>
+                    <span class="badge">Python</span>
+                    <span class="date">2026</span>
+                </div>
+                <p>Built StockML, a Python-based S&P 500 news ingestion and modeling pipeline that applies time-decay and gradient-learned source/word weights to generate signals and predict next-day equity returns.</p>
+            </div>
+        </div>
+
+        <h3 class="subsection-title slide-in">Group Projects</h3>
+        <div class="projects-grid">
+            <div class="card slide-in">
+                <img src="Images/MosquitoTracker.png" alt="Mosquito Tracker" class="card-image">
+                <div class="card-header">
+                    <h3><a href="https://devpost.com/software/app-improvement-track" target="_blank">Mosquito Tracker</a></h3>
+                    <span class="badge badge-gold">1st Place</span>
+                    <span class="badge">Astro</span>
+                    <span class="badge">CSS</span>
+                    <span class="badge">HTML</span>
+                    <span class="badge">JavaScript</span>
+                    <span class="badge">Svelte</span>
+                    <span class="badge">TypeScript</span>
+                    <span class="date">2025</span>
+                </div>
+                <p>An ultra-light, low-bandwidth version of the GLOBE Observer experience built for areas with slow or no connectivity. Features client-side WebP compression, offline-first caching with a sync-later queue, and live GLOBE API integration, all in a near-zero JavaScript architecture using Astro and Svelte islands.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Extracurriculars Section -->
+    <section class="section" id="extracurriculars">
+        <h2 class="section-title slide-in">Leadership & Activities</h2>
+        <div class="card slide-in">
+            <div class="card-header">
+                <h3>UF Data Science and Informatics</h3>
+                <span class="badge">Event Coordinator</span>
+                <span class="date">2026 &ndash; Present</span>
+            </div>
+            <p>Led planning and on-site execution of workshops, panels, and collaborations; increased campus outreach to boost attendance, managed logistics, and collected post-event metrics.</p>
+        </div>
+        <div class="card slide-in">
+            <div class="card-header">
+                <h3>Physics Club</h3>
+                <span class="badge">Founding Vice-President</span>
+                <span class="date">2023 &ndash; 2025</span>
+            </div>
+            <p>Coordinated officers' tasks, planned dozens of projects for meetings, secured club dues and membership.</p>
+        </div>
+        <div class="card slide-in">
+            <div class="card-header">
+                <h3>Douglas Physics Team</h3>
+                <span class="badge">Founder</span>
+                <span class="date">2024 &ndash; 2025</span>
+            </div>
+            <p>Created and searched for practice materials, managed dues for competitions, competed in mechanics, E&M, and optics.</p>
+        </div>
+        <div class="card slide-in">
+            <div class="card-header">
+                <h3>Astronomy Club</h3>
+                <span class="badge">Founding Vice-President</span>
+                <span class="date">2024 &ndash; 2025</span>
+            </div>
+            <p>Planned activities, crafts, astronomy nights, and helped club sponsor set up night watching events.</p>
+        </div>
+        <div class="card slide-in">
+            <div class="card-header">
+                <h3>Coding Club</h3>
+                <span class="badge">Teacher</span>
+                <span class="date">2023 &ndash; 2025</span>
+            </div>
+            <p>Taught fundamentals of circuitry and CPU building within Minecraft utilizing redstone circuitry.</p>
+        </div>
+        <div class="card slide-in">
+            <div class="card-header">
+                <h3>Mu Alpha Theta</h3>
+                <span class="badge">Tutor</span>
+                <span class="date">2024 &ndash; 2025</span>
+            </div>
+            <p>Tutored Calculus 1 to AP AB students, helping them see math from a different angle beyond class.</p>
+        </div>
+        <div class="card slide-in">
+            <div class="card-header">
+                <h3>Imagine School at Broward Summer Camp</h3>
+                <span class="badge">200+ Hours</span>
+                <span class="date">2022</span>
+            </div>
+            <p>Taught campers to build crafts, ensured rules were followed, and made sure everyone was having fun.</p>
+        </div>
+        <div class="card slide-in">
+            <div class="card-header">
+                <h3>Soldier Rush</h3>
+                <span class="badge">25+ Hours</span>
+                <span class="date">2024</span>
+            </div>
+            <p>Helped raise over $4,000 for veterans and first responders by laying groundwork of running course.</p>
+        </div>
+    </section>
+
+    <script src="index.js"></script>
+</body>
+</html>
